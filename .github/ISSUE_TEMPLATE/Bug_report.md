@@ -25,5 +25,5 @@ labels: 'bug'
 
 ## Environment
 - SDK Version: <!-- E.g. v2.28.0 -->
-- Android API Level: <!-- E.g. 8.1.0 -->
-- Device: <!--- E.g. Samsung Galaxy S20-->
+- Python Version: <!-- E.g. 3.9.0 -->
+- OS Info: <!--- E.g. Ubuntu 20.04 -->
