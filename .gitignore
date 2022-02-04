@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# PyCharm project files
+.idea/*
+
+# Local system files
+.DS_Store
