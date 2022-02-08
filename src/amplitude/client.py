@@ -5,24 +5,22 @@ import worker
 
 class Amplitude:
 
-    def __init__(self, config=None):
-        if config is None:
-            self.config = DEFAULT_CONFIG
-        else:
-            self.config = config
+    def __init__(self, apiKey, config=DEFAULT_CONFIG):
+        self.config = config
         self.timeline = Timeline()
-        self.workers = worker.create_workers_pool(config.worker_number)
+        self.apiKey = apiKey
+        self.workers = worker.create_workers_pool()
 
     def track(self, event):
         pass
 
-    def identify(self, id):
+    def identify(self, identify_obj):
         pass
 
-    def groupIdentify(self, id):
+    def groupIdentify(self, identify_obj):
         pass
 
-    def revenue(self, event):
+    def revenue(self, revenue_obj):
         pass
 
     def flush(self):
