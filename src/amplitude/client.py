@@ -5,10 +5,10 @@ import worker
 
 class Amplitude:
 
-    def __init__(self, apiKey, config=DEFAULT_CONFIG):
+    def __init__(self, api_key, config=DEFAULT_CONFIG):
         self.config = config
         self.timeline = Timeline()
-        self.apiKey = apiKey
+        self.api_key = api_key
         self.workers = worker.create_workers_pool()
 
     def track(self, event):
@@ -17,7 +17,7 @@ class Amplitude:
     def identify(self, identify_obj):
         pass
 
-    def groupIdentify(self, identify_obj):
+    def group_identify(self, identify_obj):
         pass
 
     def revenue(self, revenue_obj):
