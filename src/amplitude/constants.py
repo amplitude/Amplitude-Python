@@ -1,0 +1,8 @@
+HTTP_API_URL = "https://api2.amplitude.com/2/httpapi"
+HTTP_API_URL_EU = "https://api.eu.amplitude.com/2/httpapi"
+BATCH_API_URL = "https://api2.amplitude.com/batch"
+BATCH_API_URL_EU = "https://api.eu.amplitude.com/batch"
+IDENTIFY_API_URL = "https://api2.amplitude.com/identify"
+IDENTIFY_API_URL_EU = "https://api.eu.amplitude.com/identify"
+GROUP_IDENTIFY_API_URL = "https://api2.amplitude.com/groupidentify"
+GROUP_IDENTIFY_API_URL_EU = "https://api.eu.amplitude.com/groupidentify"

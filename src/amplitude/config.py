@@ -1,7 +1,10 @@
+from amplitude.storage import Storage
+
+
 class Config:
 
     def __init__(self):
-        pass
+        self.storage = Storage()
 
 
 DEFAULT_CONFIG = Config()
