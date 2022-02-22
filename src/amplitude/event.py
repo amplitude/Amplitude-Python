@@ -159,10 +159,3 @@ class Revenue:
 
     def __init__(self):
         pass
-
-
-if __name__ == "__main__":
-    e = Event(callback="99", event_type="abc", user_id="jdlsajsld", plan={"branch": "main", "source": "python"})
-    print(e)
-    e.event_body['a'] = 9
-    print(e)
