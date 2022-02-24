@@ -43,6 +43,8 @@ class DestinationPlugin(Plugin):
 
     def execute(self, event: BaseEvent):
         event = self.timeline.process(event)
+        if not utils.verify_event(event):
+            raise InvalidEventError("Invalid event.")
         self.storage.push_to_buffer(event, 0)
 
     def start(self):
