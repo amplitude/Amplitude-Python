@@ -9,6 +9,8 @@ from amplitude.event import BaseEvent, GroupIdentifyEvent, IdentifyEvent, Revenu
 from amplitude import utils
 from amplitude.exception import InvalidEventError
 from amplitude import constants
+from amplitude.storage import Storage
+from amplitude.timeline import Timeline
 
 
 class PluginType(Enum):
@@ -95,4 +97,3 @@ class DestinationPlugin(EventPlugin):
 
     def start(self):
         pass
-    
