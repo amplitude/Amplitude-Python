@@ -15,8 +15,6 @@ class Amplitude:
         self.options = None
 
     def track(self, event):
-        if not utils.verify_event(event):
-            raise InvalidEventError("Invalid event.")
         self.timeline.process(event)
 
     def identify(self, identify_obj):
