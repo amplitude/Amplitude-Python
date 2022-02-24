@@ -36,5 +36,8 @@ class Timeline:
         result = event
         with self.locks[plugin_type]:
             for plugin in self.plugins[plugin_type]:
-                result = plugin.execute(result)
+                if plugin.plugin_type == constants.DESTINATION_PLUGIN_TYPE:
+                    plugin.execute(event)
+                else:
+                    result = plugin.execute(result)
         return result
