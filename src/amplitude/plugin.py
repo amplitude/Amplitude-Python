@@ -9,8 +9,10 @@ from amplitude.event import BaseEvent, GroupIdentifyEvent, IdentifyEvent, Revenu
 from amplitude import utils
 from amplitude.exception import InvalidEventError
 from amplitude import constants
+from amplitude.client import Amplitude
 from amplitude.storage import Storage
 from amplitude.timeline import Timeline
+from amplitude.event import BaseEvent
 
 
 class PluginType(Enum):
