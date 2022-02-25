@@ -50,6 +50,7 @@ class BaseEvent(EventOptions):
         self.event_properties = None
         self.user_properties = None
         self.groups = None
+        self.group_properties = None
         for key, value in kwargs.items():
             self[key] = value
 

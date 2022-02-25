@@ -39,7 +39,8 @@ EVENT_KEY_MAPPING = {
     "event_id": ["event_id", int],
     "session_id": ["session_id", int],
     "insert_id": ["insert_id", str],
-    "plan": ["plan", dict]
+    "plan": ["plan", dict],
+    "group_properties": ["group_properties", dict]
 }
 PLAN_KEY_MAPPING = {
     "branch": ["branch", str],
