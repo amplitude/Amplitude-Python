@@ -10,8 +10,6 @@ class EventOptions:
         self.user_id = None
         self.device_id = None
         self.time = None
-        self.user_properties = None
-        self.groups = None
         self.app_version = None
         self.platform = None
         self.os_name = None
@@ -50,6 +48,8 @@ class BaseEvent(EventOptions):
         super().__init__(callback)
         self.event_type = None
         self.event_properties = None
+        self.user_properties = None
+        self.groups = None
         for key, value in kwargs.items():
             self[key] = value
 
