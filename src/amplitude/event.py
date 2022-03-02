@@ -2,9 +2,8 @@ import json
 import logging
 from typing import Callable
 
-from amplitude.constants import EVENT_KEY_MAPPING, PLAN_KEY_MAPPING
+from amplitude import constants
 from amplitude.worker import Response
-
 
 logger = logging.getLogger("amplitude")
 
@@ -141,8 +140,8 @@ class BaseEvent(EventOptions):
         return self.__dict__[item] is not None
 
     def __str__(self) -> str:
-        event_body = {EVENT_KEY_MAPPING[k][0]: v for k, v in self.__dict__.items()
-                      if k in EVENT_KEY_MAPPING and v is not None}
+        event_body = {constants.EVENT_KEY_MAPPING[k][0]: v for k, v in self.__dict__.items()
+                      if k in constants.EVENT_KEY_MAPPING and v is not None}
         return json.dumps(event_body, sort_keys=True, skipkeys=True)
 
     def _verify_property(self, key, value) -> bool:
@@ -151,19 +150,19 @@ class BaseEvent(EventOptions):
         if key not in self.__dict__:
             logger.error(f"Unexpected event property key: {key}")
             return False
-        if not isinstance(value, EVENT_KEY_MAPPING[key][1]):
+        if not isinstance(value, constants.EVENT_KEY_MAPPING[key][1]):
             logger.error(
-                f"Event property value type: {type(value)}. Expect {EVENT_KEY_MAPPING[key][1]}")
+                f"Event property value type: {type(value)}. Expect {constants.EVENT_KEY_MAPPING[key][1]}")
             return False
         if key != "plan":
             return True
         for plan_key, plan_value in value.items():
-            if plan_key not in PLAN_KEY_MAPPING:
+            if plan_key not in constants.PLAN_KEY_MAPPING:
                 logger.error(f"Unexpected plan property key: {plan_key}")
                 return False
-            if not isinstance(plan_value, PLAN_KEY_MAPPING[plan_key][1]):
+            if not isinstance(plan_value, constants.PLAN_KEY_MAPPING[plan_key][1]):
                 logger.error(
-                    f"Plan property value type: {type(plan_value)}. Expect {PLAN_KEY_MAPPING[plan_key][1]}")
+                    f"Plan property value type: {type(plan_value)}. Expect {constants.PLAN_KEY_MAPPING[plan_key][1]}")
                 return False
         return True
 
@@ -174,20 +173,236 @@ class BaseEvent(EventOptions):
 
 class GroupIdentifyEvent(BaseEvent):
 
-    def __init__(self, callback: Callable[[EventOptions, Response, str], None] = None, **kwargs):
-        super().__init__(callback, **kwargs)
+    def __init__(self, user_id: str | None = None,
+                 device_id: str | None = None,
+                 time: int | None = None,
+                 app_version: str | None = None,
+                 platform: str | None = None,
+                 os_name: str | None = None,
+                 os_version: str | None = None,
+                 device_brand: str | None = None,
+                 device_manufacturer: str | None = None,
+                 device_model: str | None = None,
+                 carrier: str | None = None,
+                 country: str | None = None,
+                 region: str | None = None,
+                 city: str | None = None,
+                 dma: str | None = None,
+                 language: str | None = None,
+                 price: float | None = None,
+                 quantity: int | None = None,
+                 revenue: float | None = None,
+                 product_id: str | None = None,
+                 revenue_type: str | None = None,
+                 location_lat: float | None = None,
+                 location_lng: float | None = None,
+                 ip: str | None = None,
+                 idfa: str | None = None,
+                 idfv: str | None = None,
+                 adid: str | None = None,
+                 android_id: str | None = None,
+                 event_id: int | None = None,
+                 session_id: int | None = None,
+                 insert_id: str | None = None,
+                 plan: dict | None = None,
+                 event_properties: dict | None = None,
+                 user_properties: dict | None = None,
+                 groups: dict | None = None,
+                 group_properties: dict | None = None,
+                 callback: Callable[[EventOptions, Response, str], None] | None = None):
+        super().__init__(constants.GROUP_IDENTIFY_EVENT, user_id,
+                         device_id,
+                         time,
+                         app_version,
+                         platform,
+                         os_name,
+                         os_version,
+                         device_brand,
+                         device_manufacturer,
+                         device_model,
+                         carrier,
+                         country,
+                         region,
+                         city,
+                         dma,
+                         language,
+                         price,
+                         quantity,
+                         revenue,
+                         product_id,
+                         revenue_type,
+                         location_lat,
+                         location_lng,
+                         ip,
+                         idfa,
+                         idfv,
+                         adid,
+                         android_id,
+                         event_id,
+                         session_id,
+                         insert_id,
+                         plan,
+                         event_properties,
+                         user_properties,
+                         groups,
+                         group_properties,
+                         callback)
 
 
 class IdentifyEvent(BaseEvent):
 
-    def __init__(self, callback: Callable[[EventOptions, Response, str], None] = None, **kwargs):
-        super().__init__(callback, **kwargs)
+    def __init__(self, user_id: str | None = None,
+                 device_id: str | None = None,
+                 time: int | None = None,
+                 app_version: str | None = None,
+                 platform: str | None = None,
+                 os_name: str | None = None,
+                 os_version: str | None = None,
+                 device_brand: str | None = None,
+                 device_manufacturer: str | None = None,
+                 device_model: str | None = None,
+                 carrier: str | None = None,
+                 country: str | None = None,
+                 region: str | None = None,
+                 city: str | None = None,
+                 dma: str | None = None,
+                 language: str | None = None,
+                 price: float | None = None,
+                 quantity: int | None = None,
+                 revenue: float | None = None,
+                 product_id: str | None = None,
+                 revenue_type: str | None = None,
+                 location_lat: float | None = None,
+                 location_lng: float | None = None,
+                 ip: str | None = None,
+                 idfa: str | None = None,
+                 idfv: str | None = None,
+                 adid: str | None = None,
+                 android_id: str | None = None,
+                 event_id: int | None = None,
+                 session_id: int | None = None,
+                 insert_id: str | None = None,
+                 plan: dict | None = None,
+                 event_properties: dict | None = None,
+                 user_properties: dict | None = None,
+                 groups: dict | None = None,
+                 group_properties: dict | None = None,
+                 callback: Callable[[EventOptions, Response, str], None] | None = None):
+        super().__init__(constants.IDENTIFY_EVENT, user_id,
+                         device_id,
+                         time,
+                         app_version,
+                         platform,
+                         os_name,
+                         os_version,
+                         device_brand,
+                         device_manufacturer,
+                         device_model,
+                         carrier,
+                         country,
+                         region,
+                         city,
+                         dma,
+                         language,
+                         price,
+                         quantity,
+                         revenue,
+                         product_id,
+                         revenue_type,
+                         location_lat,
+                         location_lng,
+                         ip,
+                         idfa,
+                         idfv,
+                         adid,
+                         android_id,
+                         event_id,
+                         session_id,
+                         insert_id,
+                         plan,
+                         event_properties,
+                         user_properties,
+                         groups,
+                         group_properties,
+                         callback)
 
 
 class RevenueEvent(BaseEvent):
 
-    def __init__(self, callback: Callable[[EventOptions, Response, str], None] = None, **kwargs):
-        super().__init__(callback, **kwargs)
+    def __init__(self, user_id: str | None = None,
+                 device_id: str | None = None,
+                 time: int | None = None,
+                 app_version: str | None = None,
+                 platform: str | None = None,
+                 os_name: str | None = None,
+                 os_version: str | None = None,
+                 device_brand: str | None = None,
+                 device_manufacturer: str | None = None,
+                 device_model: str | None = None,
+                 carrier: str | None = None,
+                 country: str | None = None,
+                 region: str | None = None,
+                 city: str | None = None,
+                 dma: str | None = None,
+                 language: str | None = None,
+                 price: float | None = None,
+                 quantity: int | None = None,
+                 revenue: float | None = None,
+                 product_id: str | None = None,
+                 revenue_type: str | None = None,
+                 location_lat: float | None = None,
+                 location_lng: float | None = None,
+                 ip: str | None = None,
+                 idfa: str | None = None,
+                 idfv: str | None = None,
+                 adid: str | None = None,
+                 android_id: str | None = None,
+                 event_id: int | None = None,
+                 session_id: int | None = None,
+                 insert_id: str | None = None,
+                 plan: dict | None = None,
+                 event_properties: dict | None = None,
+                 user_properties: dict | None = None,
+                 groups: dict | None = None,
+                 group_properties: dict | None = None,
+                 callback: Callable[[EventOptions, Response, str], None] | None = None):
+        super().__init__(constants.AMP_REVENUE_EVENT, user_id,
+                         device_id,
+                         time,
+                         app_version,
+                         platform,
+                         os_name,
+                         os_version,
+                         device_brand,
+                         device_manufacturer,
+                         device_model,
+                         carrier,
+                         country,
+                         region,
+                         city,
+                         dma,
+                         language,
+                         price,
+                         quantity,
+                         revenue,
+                         product_id,
+                         revenue_type,
+                         location_lat,
+                         location_lng,
+                         ip,
+                         idfa,
+                         idfv,
+                         adid,
+                         android_id,
+                         event_id,
+                         session_id,
+                         insert_id,
+                         plan,
+                         event_properties,
+                         user_properties,
+                         groups,
+                         group_properties,
+                         callback)
 
 
 class Identify:

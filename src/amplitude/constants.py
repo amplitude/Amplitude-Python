@@ -47,3 +47,9 @@ PLAN_KEY_MAPPING = {
     "source": ["source", str],
     "version": ["version", str]
 }
+
+IDENTIFY_EVENT = "$identify"
+GROUP_IDENTIFY_EVENT = "$groupidentify"
+AMP_REVENUE_EVENT = "revenue_amount"
+MAX_PROPERTY_KEYS = 1024
+MAX_STRING_LENGTH = 1024
