@@ -1,5 +1,6 @@
 import threading
 from amplitude import constants
+from amplitude.exception import InvalidEventError
 
 
 class Timeline:
@@ -36,11 +37,13 @@ class Timeline:
         result = event
         with self.locks[plugin_type]:
             for plugin in self.plugins[plugin_type]:
+                if not result:
+                    break
                 try:
                     if plugin.plugin_type == constants.DESTINATION_PLUGIN_TYPE:
-                        plugin.execute(event)
+                        plugin.execute(result)
                     else:
                         result = plugin.execute(result)
-                except Exception as err:
+                except InvalidEventError as err:
                     self.amplitude.logger.error(err)
         return result
