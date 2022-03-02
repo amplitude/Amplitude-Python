@@ -1,8 +1,8 @@
-from amplitude.event import Event
+from amplitude.event import BaseEvent
 
 
 def verify_event(event):
-    if not isinstance(event, Event):
+    if not isinstance(event, BaseEvent):
         return False
     if not event["event_type"]:
         return False
