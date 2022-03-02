@@ -1,3 +1,5 @@
+from typing import Dict, List, Type
+
 HTTP_API_URL = "https://api2.amplitude.com/2/httpapi"
 HTTP_API_URL_EU = "https://api.eu.amplitude.com/2/httpapi"
 BATCH_API_URL = "https://api2.amplitude.com/batch"
