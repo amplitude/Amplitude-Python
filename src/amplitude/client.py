@@ -9,10 +9,18 @@ class Amplitude:
 
     def __init__(self, api_key, configuration=config.DEFAULT_CONFIG):
         self.configuration = configuration
-        self.timeline = Timeline()
+        self.__timeline = Timeline()
         self.api_key = api_key
-        self.workers = worker.create_workers_pool()
+        self.__workers = worker.create_workers_pool()
         self.options = None
+
+    @property
+    def timeline(self):
+        return self.__timeline
+
+    @property
+    def workers(self):
+        return self.__workers
 
     def track(self, event):
         self.timeline.process(event)
