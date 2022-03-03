@@ -42,7 +42,6 @@ class EventOptions:
         self.event_id: Optional[int] = None
         self.session_id: Optional[int] = None
         self.insert_id: Optional[str] = None
-        self.plan: Optional[dict[str: str]] = None
         self.event_callback: Optional[Callable[[EventOptions, Response, str], None]] = callback
 
 
@@ -118,12 +117,13 @@ class BaseEvent(EventOptions):
         self["event_id"] = event_id
         self["session_id"] = session_id
         self["insert_id"] = insert_id
-        self["plan"] = plan
+        self.plan: Optional[dict[str: str]] = None
         self.event_type: str = event_type
         self.event_properties: Optional[dict] = None
         self.user_properties: Optional[dict] = None
         self.groups: Optional[dict] = None
         self.group_properties: Optional[dict] = None
+        self["plan"] = plan
         self["event_properties"] = event_properties
         self["user_properties"] = user_properties
         self["groups"] = groups
