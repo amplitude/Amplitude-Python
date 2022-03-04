@@ -1,11 +1,77 @@
 import json
 import logging
-from typing import Callable, Optional
+from typing import Callable, Optional, Union
 
 from amplitude import constants
-from amplitude.worker import Response
 
-logger = logging.getLogger("amplitude")
+
+PLAN_KEY_MAPPING = {
+    "branch": ["branch", str],
+    "source": ["source", str],
+    "version": ["version", str]
+}
+logger = logging.getLogger(constants.LOGGER_NAME)
+
+
+class Plan:
+
+    def __init__(self, branch: Optional[str], source: Optional[str], version: Optional[str]):
+        self.branch: Optional[str] = branch
+        self.source: Optional[str] = source
+        self.version: Optional[str] = version
+
+    def get_plan_body(self) -> dict[str: str]:
+        result = {}
+        for key in PLAN_KEY_MAPPING:
+            if not self.__dict__[key]:
+                continue
+            if isinstance(self.__dict__[key], PLAN_KEY_MAPPING[key][1]):
+                result[PLAN_KEY_MAPPING[key][0]] = self.__dict__[key]
+            else:
+                logger.error(
+                    f"plan.{key} value type: {type(self.__dict__[key])}. Expect {PLAN_KEY_MAPPING[key][1]}")
+        return result
+
+
+EVENT_KEY_MAPPING = {
+    "user_id": ["user_id", str],
+    "device_id": ["device_id", str],
+    "event_type": ["event_type", str],
+    "time": ["time", int],
+    "event_properties": ["event_properties", dict],
+    "user_properties": ["user_properties", dict],
+    "groups": ["groups", dict],
+    "app_version": ["app_version", str],
+    "platform": ["platform", str],
+    "os_name": ["os_name", str],
+    "os_version": ["os_version", str],
+    "device_brand": ["device_brand", str],
+    "device_manufacturer": ["device_manufacturer", str],
+    "device_model": ["device_model", str],
+    "carrier": ["carrier", str],
+    "country": ["country", str],
+    "region": ["region", str],
+    "city": ["city", str],
+    "dma": ["dma", str],
+    "language": ["language", str],
+    "price": ["price", float],
+    "quantity": ["quantity", int],
+    "revenue": ["revenue", float],
+    "product_id": ["productId", str],
+    "revenue_type": ["revenueType", str],
+    "location_lat": ["location_lat", float],
+    "location_lng": ["location_lng", float],
+    "ip": ["ip", str],
+    "idfa": ["idfa", str],
+    "idfv": ["idfv", str],
+    "adid": ["adid", str],
+    "android_id": ["android_id", str],
+    "event_id": ["event_id", int],
+    "session_id": ["session_id", int],
+    "insert_id": ["insert_id", str],
+    "plan": ["plan", Plan],
+    "group_properties": ["group_properties", dict]
+}
 
 
 class EventOptions:
@@ -41,7 +107,7 @@ class EventOptions:
                  event_id: Optional[int] = None,
                  session_id: Optional[int] = None,
                  insert_id: Optional[str] = None,
-                 plan: Optional[dict] = None,
+                 plan: Optional[Plan] = None,
                  callback=None):
         self.user_id: Optional[str] = None
         self.device_id: Optional[str] = None
@@ -74,7 +140,7 @@ class EventOptions:
         self.event_id: Optional[int] = None
         self.session_id: Optional[int] = None
         self.insert_id: Optional[str] = None
-        self.plan: Optional[dict[str: str]] = None
+        self.plan: Optional[Plan] = None
         self["user_id"] = user_id
         self["device_id"] = device_id
         self["time"] = time
@@ -114,7 +180,7 @@ class EventOptions:
             return self.__dict__[item]
         return None
 
-    def __setitem__(self, key: str, value: str | float | int | dict) -> None:
+    def __setitem__(self, key: str, value: Union[str, float, int, dict, Plan]) -> None:
         if self._verify_property(key, value):
             self.__dict__[key] = value
 
@@ -124,8 +190,12 @@ class EventOptions:
         return self.__dict__[item] is not None
 
     def __str__(self) -> str:
-        event_body = {constants.EVENT_KEY_MAPPING[k][0]: v for k, v in self.__dict__.items()
-                      if k in constants.EVENT_KEY_MAPPING and v is not None}
+        event_body = {}
+        for key, value in EVENT_KEY_MAPPING.items():
+            if attribute_value := self[key]:
+                event_body[value[0]] = attribute_value
+        if "plan" in event_body:
+            event_body["plan"] = event_body["plan"].get_plan_body()
         return json.dumps(event_body, sort_keys=True, skipkeys=True)
 
     def _verify_property(self, key, value) -> bool:
@@ -134,20 +204,10 @@ class EventOptions:
         if key not in self.__dict__:
             logger.error(f"Unexpected event property key: {key}")
             return False
-        if not isinstance(value, constants.EVENT_KEY_MAPPING[key][1]):
+        if not isinstance(value, EVENT_KEY_MAPPING[key][1]):
             logger.error(
-                f"Event property value type: {type(value)}. Expect {constants.EVENT_KEY_MAPPING[key][1]}")
+                f"Event property value type: {type(value)}. Expect {EVENT_KEY_MAPPING[key][1]}")
             return False
-        if key != "plan":
-            return True
-        for plan_key, plan_value in value.items():
-            if plan_key not in constants.PLAN_KEY_MAPPING:
-                logger.error(f"Unexpected plan property key: {plan_key}")
-                return False
-            if not isinstance(plan_value, constants.PLAN_KEY_MAPPING[plan_key][1]):
-                logger.error(
-                    f"Plan property value type: {type(plan_value)}. Expect {constants.PLAN_KEY_MAPPING[plan_key][1]}")
-                return False
         return True
 
     def callback(self, status_code: int, message=None) -> None:
@@ -189,7 +249,7 @@ class BaseEvent(EventOptions):
                  event_id: Optional[int] = None,
                  session_id: Optional[int] = None,
                  insert_id: Optional[str] = None,
-                 plan: Optional[dict] = None,
+                 plan: Optional[Plan] = None,
                  event_properties: Optional[dict] = None,
                  user_properties: Optional[dict] = None,
                  groups: Optional[dict] = None,
@@ -272,7 +332,7 @@ class GroupIdentifyEvent(BaseEvent):
                  event_id: Optional[int] = None,
                  session_id: Optional[int] = None,
                  insert_id: Optional[str] = None,
-                 plan: Optional[dict] = None,
+                 plan: Optional[Plan] = None,
                  event_properties: Optional[dict] = None,
                  user_properties: Optional[dict] = None,
                  groups: Optional[dict] = None,
@@ -350,7 +410,7 @@ class IdentifyEvent(BaseEvent):
                  event_id: Optional[int] = None,
                  session_id: Optional[int] = None,
                  insert_id: Optional[str] = None,
-                 plan: Optional[dict] = None,
+                 plan: Optional[Plan] = None,
                  event_properties: Optional[dict] = None,
                  user_properties: Optional[dict] = None,
                  groups: Optional[dict] = None,
@@ -428,7 +488,7 @@ class RevenueEvent(BaseEvent):
                  event_id: Optional[int] = None,
                  session_id: Optional[int] = None,
                  insert_id: Optional[str] = None,
-                 plan: Optional[dict] = None,
+                 plan: Optional[Plan] = None,
                  event_properties: Optional[dict] = None,
                  user_properties: Optional[dict] = None,
                  groups: Optional[dict] = None,
