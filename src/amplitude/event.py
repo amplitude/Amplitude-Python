@@ -107,7 +107,7 @@ class EventOptions:
         self["session_id"] = session_id
         self["insert_id"] = insert_id
         self["plan"] = plan
-        self.event_callback: Optional[Callable[[EventOptions, Response, str], None]] = callback
+        self.event_callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = callback
 
     def __getitem__(self, item: str):
         if item in self.__dict__:
@@ -150,9 +150,9 @@ class EventOptions:
                 return False
         return True
 
-    def callback(self, response, message=None) -> None:
+    def callback(self, status_code: int, message=None) -> None:
         if callable(self.event_callback):
-            self.event_callback(self, response, message)
+            self.event_callback(self, status_code, message)
 
 
 class BaseEvent(EventOptions):
@@ -194,7 +194,7 @@ class BaseEvent(EventOptions):
                  user_properties: Optional[dict] = None,
                  groups: Optional[dict] = None,
                  group_properties: Optional[dict] = None,
-                 callback: Optional[Callable[[EventOptions, Response, str], None]] = None):
+                 callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None):
         super().__init__(user_id,
                          device_id,
                          time,
@@ -277,7 +277,7 @@ class GroupIdentifyEvent(BaseEvent):
                  user_properties: Optional[dict] = None,
                  groups: Optional[dict] = None,
                  group_properties: Optional[dict] = None,
-                 callback: Optional[Callable[[EventOptions, Response, str], None]] = None):
+                 callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None):
         super().__init__(constants.GROUP_IDENTIFY_EVENT, user_id,
                          device_id,
                          time,
@@ -355,7 +355,7 @@ class IdentifyEvent(BaseEvent):
                  user_properties: Optional[dict] = None,
                  groups: Optional[dict] = None,
                  group_properties: Optional[dict] = None,
-                 callback: Optional[Callable[[EventOptions, Response, str], None]] = None):
+                 callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None):
         super().__init__(constants.IDENTIFY_EVENT, user_id,
                          device_id,
                          time,
@@ -433,7 +433,7 @@ class RevenueEvent(BaseEvent):
                  user_properties: Optional[dict] = None,
                  groups: Optional[dict] = None,
                  group_properties: Optional[dict] = None,
-                 callback: Optional[Callable[[EventOptions, Response, str], None]] = None):
+                 callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None):
         super().__init__(constants.AMP_REVENUE_EVENT, user_id,
                          device_id,
                          time,
