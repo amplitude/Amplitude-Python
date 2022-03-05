@@ -190,13 +190,16 @@ class EventOptions:
         return self.__dict__[item] is not None
 
     def __str__(self) -> str:
+        return json.dumps(self.get_event_body(), sort_keys=True, skipkeys=True)
+
+    def get_event_body(self) -> dict:
         event_body = {}
         for key, value in EVENT_KEY_MAPPING.items():
             if attribute_value := self[key]:
                 event_body[value[0]] = attribute_value
         if "plan" in event_body:
             event_body["plan"] = event_body["plan"].get_plan_body()
-        return json.dumps(event_body, sort_keys=True, skipkeys=True)
+        return event_body
 
     def _verify_property(self, key, value) -> bool:
         if value is None:
