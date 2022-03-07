@@ -1,18 +1,29 @@
-from config import DEFAULT_CONFIG
-from timeline import Timeline
-import worker
+from amplitude import config
+from amplitude.exception import InvalidEventError
+from amplitude.timeline import Timeline
+from amplitude import utils
+from amplitude import worker
 
 
 class Amplitude:
 
-    def __init__(self, api_key, config=DEFAULT_CONFIG):
-        self.config = config
-        self.timeline = Timeline()
+    def __init__(self, api_key, configuration=config.DEFAULT_CONFIG):
+        self.configuration = configuration
+        self.__timeline = Timeline()
         self.api_key = api_key
-        self.workers = worker.create_workers_pool()
+        self.__workers = worker.create_workers_pool()
+        self.options = None
+
+    @property
+    def timeline(self):
+        return self.__timeline
+
+    @property
+    def workers(self):
+        return self.__workers
 
     def track(self, event):
-        pass
+        self.timeline.process(event)
 
     def identify(self, identify_obj):
         pass
@@ -27,7 +38,9 @@ class Amplitude:
         pass
 
     def add(self, plugin):
-        pass
+        self.timeline.add(plugin)
+        return self
 
     def remove(self, plugin):
-        pass
+        self.timeline.remove(plugin)
+        return self
