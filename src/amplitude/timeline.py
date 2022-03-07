@@ -54,5 +54,4 @@ class Timeline:
                         result = plugin.execute(result)
                 except InvalidEventError as err:
                     logger.error(err)
-                result = plugin.execute(result)
         return result

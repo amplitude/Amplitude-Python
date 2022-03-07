@@ -13,6 +13,14 @@ from amplitude.client import Amplitude
 from amplitude.storage import Storage
 from amplitude.timeline import Timeline
 from amplitude.event import BaseEvent
+from amplitude import utils
+from amplitude.exception import InvalidEventError
+
+
+class PluginType(Enum):
+    BEFORE = 0
+    ENRICHMENT = 1
+    DESTINATION = 2
 
 
 class PluginType(Enum):
