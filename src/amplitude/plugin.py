@@ -1,15 +1,23 @@
 import abc
-from amplitude import constants
+from enum import Enum
 from amplitude.client import Amplitude
 from amplitude.storage import Storage
 from amplitude.timeline import Timeline
 from amplitude.event import BaseEvent
+from amplitude import utils
+from amplitude.exception import InvalidEventError
+
+
+class PluginType(Enum):
+    BEFORE = 0
+    ENRICHMENT = 1
+    DESTINATION = 2
 
 
 class Plugin(abc.ABC):
 
-    def __init__(self, plugin_type):
-        self.plugin_type = plugin_type
+    def __init__(self, plugin_type: PluginType):
+        self.plugin_type: PluginType = plugin_type
         self.enable = True
 
     @abc.abstractmethod
@@ -20,7 +28,7 @@ class Plugin(abc.ABC):
 class DestinationPlugin(Plugin):
 
     def __init__(self, storage: Storage = None, ):
-        super().__init__(constants.DESTINATION_PLUGIN_TYPE)
+        super().__init__(PluginType.DESTINATION)
         self.timeline = Timeline()
         self.amplitude = None
         self.workers = None
@@ -45,7 +53,7 @@ class DestinationPlugin(Plugin):
         event = self.timeline.process(event)
         if not utils.verify_event(event):
             raise InvalidEventError("Invalid event.")
-        self.storage.push_to_buffer(event, 0)
+        self.storage.push_to_buffer(event)
 
     def start(self):
         pass

@@ -1,7 +1,5 @@
 from amplitude import config
-from amplitude.exception import InvalidEventError
 from amplitude.timeline import Timeline
-from amplitude import utils
 from amplitude import worker
 
 

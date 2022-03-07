@@ -1,22 +1,30 @@
+import logging
 import threading
+from typing import Optional
+
 from amplitude import constants
+from amplitude.client import Amplitude
+from amplitude.plugin import PluginType
 from amplitude.exception import InvalidEventError
+
+
+logger = logging.getLogger(constants.LOGGER_NAME)
 
 
 class Timeline:
 
-    def __init__(self, client):
+    def __init__(self, client: Optional[Amplitude] = None):
         self.locks = {
-            constants.BEFORE_PLUGIN_TYPE: threading.Lock(),
-            constants.ENRICHMENT_PLUGIN_TYPE: threading.Lock(),
-            constants.DESTINATION_PLUGIN_TYPE: threading.Lock()
+            PluginType.BEFORE: threading.Lock(),
+            PluginType.ENRICHMENT: threading.Lock(),
+            PluginType.DESTINATION: threading.Lock()
         }
         self.plugins = {
-            constants.BEFORE_PLUGIN_TYPE: [],
-            constants.ENRICHMENT_PLUGIN_TYPE: [],
-            constants.DESTINATION_PLUGIN_TYPE: []
+            PluginType.BEFORE: [],
+            PluginType.ENRICHMENT: [],
+            PluginType.DESTINATION: []
         }
-        self.amplitude = client
+        self.__amplitude_client = client
 
     def add(self, plugin):
         with self.locks[plugin.plugin_type]:
@@ -28,9 +36,9 @@ class Timeline:
                 self.plugins[plugin_type] = [p for p in self.plugins[plugin_type] if p != plugin]
 
     def process(self, event):
-        before_result = self.apply_plugins(constants.BEFORE_PLUGIN_TYPE, event)
-        enrich_result = self.apply_plugins(constants.ENRICHMENT_PLUGIN_TYPE, before_result)
-        self.apply_plugins(constants.DESTINATION_PLUGIN_TYPE, enrich_result)
+        before_result = self.apply_plugins(PluginType.BEFORE, event)
+        enrich_result = self.apply_plugins(PluginType.ENRICHMENT, before_result)
+        self.apply_plugins(PluginType.DESTINATION, enrich_result)
         return enrich_result
 
     def apply_plugins(self, plugin_type, event):
@@ -40,10 +48,10 @@ class Timeline:
                 if not result:
                     break
                 try:
-                    if plugin.plugin_type == constants.DESTINATION_PLUGIN_TYPE:
+                    if plugin.plugin_type == PluginType.DESTINATION:
                         plugin.execute(result)
                     else:
                         result = plugin.execute(result)
                 except InvalidEventError as err:
-                    self.amplitude.logger.error(err)
+                    logger.error(err)
         return result
