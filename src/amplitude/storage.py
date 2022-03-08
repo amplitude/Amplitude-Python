@@ -2,7 +2,7 @@ import abc
 import threading
 from typing import List, Tuple
 
-from amplitude.event import EventOptions
+from amplitude.event import BaseEvent
 from amplitude import utils
 
 
@@ -13,15 +13,15 @@ class Storage(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def push(self, event: EventOptions) -> None:
+    def push(self, event: BaseEvent) -> None:
         pass
 
     @abc.abstractmethod
-    def pull(self, batch_size: int) -> List[EventOptions]:
+    def pull(self, batch_size: int) -> List[BaseEvent]:
         pass
 
     @abc.abstractmethod
-    def pull_all(self) -> List[EventOptions]:
+    def pull_all(self) -> List[BaseEvent]:
         pass
 
 
@@ -33,20 +33,20 @@ class InMemoryStorage(Storage):
         self.retry_events: int = 0
         self.retry_delay: List[int] = retry_delay
         self.max_retry: int = len(retry_delay)
-        self.buffer_data: List[Tuple[int, EventOptions]] = []
+        self.buffer_data: List[Tuple[int, BaseEvent]] = []
         self.buffer_lock = threading.Lock()
         self.amplitude_client = None
 
-    def push(self, event: EventOptions, delay: int = 0) -> None:
+    def push(self, event: BaseEvent, delay: int = 0) -> None:
         if (self.total_events > self.max_capacity and event.retry) or \
                 (event.retry >= self.max_retry):
             if self.amplitude_client:
                 self.amplitude_client.callback(event)
             return
-        time_stamp = delay + self.get_retry_delay(event.retry) + utils.current_milliseconds()
+        time_stamp = delay + self._get_retry_delay(event.retry) + utils.current_milliseconds()
         self._insert_event(time_stamp, event)
 
-    def pull(self, batch_size: int) -> List[EventOptions]:
+    def pull(self, batch_size: int) -> List[BaseEvent]:
         result = []
         current_time = utils.current_milliseconds()
         with self.buffer_lock:
@@ -66,7 +66,7 @@ class InMemoryStorage(Storage):
             self.retry_events -= retry_count
         return result
 
-    def pull_all(self) -> List[EventOptions]:
+    def pull_all(self) -> List[BaseEvent]:
         with self.buffer_lock:
             self.total_events = 0
             self.new_events = 0
@@ -75,7 +75,7 @@ class InMemoryStorage(Storage):
             self.buffer_data = []
             return result
 
-    def _insert_event(self, time_stamp: int, event: EventOptions):
+    def _insert_event(self, time_stamp: int, event: BaseEvent):
         with self.buffer_lock:
             left, right = 0, len(self.buffer_data) - 1
             while left < right:
@@ -90,3 +90,13 @@ class InMemoryStorage(Storage):
                 self.retry_events += 1
             else:
                 self.new_events += 1
+
+    def _get_retry_delay(self, retry: int) -> int:
+        if not self.retry_delay:
+            return 0
+        if retry >= len(self.retry_delay):
+            return self.retry_delay[-1]
+        if retry < 0:
+            return self.retry_delay[0]
+        return self.retry_delay[retry]
+    
