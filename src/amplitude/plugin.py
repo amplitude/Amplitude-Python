@@ -21,6 +21,7 @@ class PluginType(Enum):
     BEFORE = 0
     ENRICHMENT = 1
     DESTINATION = 2
+    OBSERVE = 3
 
 
 class PluginType(Enum):
@@ -41,6 +42,9 @@ class Plugin(abc.ABC):
 
     @abc.abstractmethod
     def execute(self, event: BaseEvent):
+        pass
+
+    def setup(self, client: Amplitude):
         pass
 
 

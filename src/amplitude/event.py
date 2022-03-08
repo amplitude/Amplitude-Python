@@ -173,6 +173,7 @@ class EventOptions:
         self["insert_id"] = insert_id
         self["plan"] = plan
         self.event_callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = callback
+        self.__retry: int = 0
 
     def __getitem__(self, item: str):
         if item in self.__dict__:
@@ -215,6 +216,14 @@ class EventOptions:
     def callback(self, status_code: int, message=None) -> None:
         if callable(self.event_callback):
             self.event_callback(self, status_code, message)
+
+    @property
+    def retry(self):
+        return self.__retry
+
+    @retry.setter
+    def retry(self, n: int):
+        self.__retry = n
 
 
 class BaseEvent(EventOptions):

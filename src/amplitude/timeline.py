@@ -52,6 +52,8 @@ class Timeline:
                         plugin.execute(result)
                     else:
                         result = plugin.execute(result)
-                except InvalidEventError as err:
-                    logger.error(err)
+                except InvalidEventError:
+                    logger.error(f"Invalid event body {event}")
+                except Exception:
+                    logger.error(f"Error for apply {plugin_type.name} plugin for event {event}")
         return result
