@@ -25,6 +25,13 @@ class Storage(abc.ABC):
         pass
 
 
+class StorageProvider(abc.ABC):
+
+    @abc.abstractmethod
+    def get_storage(self) -> Storage:
+        pass
+
+
 class InMemoryStorage(Storage):
     def __init__(self, max_capacity, retry_delay):
         self.max_capacity: int = max_capacity
@@ -99,4 +106,9 @@ class InMemoryStorage(Storage):
         if retry < 0:
             return self.retry_delay[0]
         return self.retry_delay[retry]
-    
+
+
+class InMemoryStorageProvider(StorageProvider):
+
+    def get_storage(self) -> InMemoryStorage:
+        pass
