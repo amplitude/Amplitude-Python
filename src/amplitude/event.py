@@ -195,8 +195,8 @@ class EventOptions:
     def get_event_body(self) -> dict:
         event_body = {}
         for key, value in EVENT_KEY_MAPPING.items():
-            if attribute_value := self[key]:
-                event_body[value[0]] = attribute_value
+            if key in self and self[key] is not None:
+                event_body[value[0]] = self[key]
         if "plan" in event_body:
             event_body["plan"] = event_body["plan"].get_plan_body()
         return event_body
