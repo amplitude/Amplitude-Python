@@ -9,7 +9,7 @@ PLAN_KEY_MAPPING = {
     "source": ["source", str],
     "version": ["version", str]
 }
-logger = logging.getLogger(constants.LOGGER_NAME)
+logger = logging.getLogger(__name__)
 
 
 class Plan:
@@ -215,7 +215,10 @@ class EventOptions:
 
     def callback(self, status_code: int, message=None) -> None:
         if callable(self.event_callback):
-            self.event_callback(self, status_code, message)
+            try:
+                self.event_callback(self, status_code, message)
+            except Exception:
+                logger.error(f"Event callback error for event {self}")
 
     @property
     def retry(self):
