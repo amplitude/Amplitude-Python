@@ -1,9 +1,9 @@
 import abc
-import threading
+from threading import Condition
 from typing import List, Tuple
 
 from amplitude.event import BaseEvent
-from amplitude import utils
+from amplitude import utils, constants
 
 
 class Storage(abc.ABC):
@@ -28,27 +28,52 @@ class Storage(abc.ABC):
 class StorageProvider(abc.ABC):
 
     @abc.abstractmethod
-    def get_storage(self) -> Storage:
+    def get_storage(self, destination) -> Storage:
         pass
 
 
 class InMemoryStorage(Storage):
-    def __init__(self, max_capacity, retry_delay):
-        self.max_capacity: int = max_capacity
+    def __init__(self, destination):
         self.total_events: int = 0
         self.new_events: int = 0
         self.retry_events: int = 0
-        self.retry_delay: List[int] = retry_delay
-        self.max_retry: int = len(retry_delay)
         self.buffer_data: List[Tuple[int, BaseEvent]] = []
-        self.buffer_lock = threading.Lock()
-        self.amplitude_client = None
+        self.buffer_lock_cv = Condition()
+        self.destination = destination
+        self.__amplitude_client = None
 
-    def push(self, event: BaseEvent, delay: int = 0) -> None:
-        if (self.total_events > self.max_capacity and event.retry) or \
-                (event.retry >= self.max_retry):
-            if self.amplitude_client:
-                self.amplitude_client.callback(event)
+    @property
+    def lock(self):
+        return self.buffer_lock_cv
+
+    @property
+    def max_capacity(self) -> int:
+        if self.__amplitude_client:
+            return self.__amplitude_client.configuration.buffer_capacity
+        return constants.MAX_BUFFER_CAPACITY
+
+    @property
+    def retry_delay(self) -> List[int]:
+        if self.__amplitude_client:
+            return self.__amplitude_client.configuration.retry_delay
+        return constants.RETRY_DELAY[:]
+
+    @property
+    def max_retry(self) -> int:
+        return len(self.retry_delay)
+
+    def setup(self, client):
+        self.__amplitude_client = client
+
+    def push(self, event: BaseEvent, delay: int = 0, response=None) -> None:
+        code = 0
+        if response:
+            code = response = code
+        if event.retry and self.total_events > self.max_capacity:
+            self.callback(event, code, "Destination buffer full. Retry temporarily disabled")
+            return
+        if event.retry >= self.max_retry:
+            self.callback(event, code, f"Event reached max retry times {self.max_retry}.")
             return
         time_stamp = delay + self._get_retry_delay(event.retry) + utils.current_milliseconds()
         self._insert_event(time_stamp, event)
@@ -56,7 +81,7 @@ class InMemoryStorage(Storage):
     def pull(self, batch_size: int) -> List[BaseEvent]:
         result = []
         current_time = utils.current_milliseconds()
-        with self.buffer_lock:
+        with self.lock:
             index = 0
             new_count, retry_count = 0, 0
             while index < self.total_events and index < batch_size and current_time > self.buffer_data[index][0]:
@@ -74,7 +99,7 @@ class InMemoryStorage(Storage):
         return result
 
     def pull_all(self) -> List[BaseEvent]:
-        with self.buffer_lock:
+        with self.lock:
             self.total_events = 0
             self.new_events = 0
             self.retry_events = 0
@@ -82,8 +107,14 @@ class InMemoryStorage(Storage):
             self.buffer_data = []
             return result
 
+    def callback(self, event, code, message):
+        if self.__amplitude_client:
+            self.__amplitude_client.callback(event, code, message)
+        else:
+            event.callback(code, message)
+
     def _insert_event(self, time_stamp: int, event: BaseEvent):
-        with self.buffer_lock:
+        with self.lock:
             left, right = 0, len(self.buffer_data) - 1
             while left < right:
                 mid = (left + right) // 2
@@ -97,18 +128,19 @@ class InMemoryStorage(Storage):
                 self.retry_events += 1
             else:
                 self.new_events += 1
+            if self.total_events >= self.destination.batch_size:
+                self.lock.notify()
 
     def _get_retry_delay(self, retry: int) -> int:
-        if not self.retry_delay:
-            return 0
-        if retry >= len(self.retry_delay):
-            return self.retry_delay[-1]
+        retry_delay = self.retry_delay
+        if retry >= len(retry_delay):
+            return retry_delay[-1]
         if retry < 0:
-            return self.retry_delay[0]
-        return self.retry_delay[retry]
+            return retry_delay[0]
+        return retry_delay[retry]
 
 
 class InMemoryStorageProvider(StorageProvider):
 
-    def get_storage(self) -> InMemoryStorage:
-        pass
+    def get_storage(self, destination) -> InMemoryStorage:
+        return InMemoryStorage(destination)
