@@ -1,27 +1,16 @@
 import abc
+import json
+import logging
 from enum import Enum
 from typing import Optional
 
-from amplitude.client import Amplitude
-from amplitude.storage import Storage
-from amplitude.timeline import Timeline
 from amplitude.event import BaseEvent, GroupIdentifyEvent, IdentifyEvent, RevenueEvent
-from amplitude import utils
-from amplitude.exception import InvalidEventError
 from amplitude import constants
 from amplitude.client import Amplitude
-from amplitude.storage import Storage
 from amplitude.timeline import Timeline
-from amplitude.event import BaseEvent
 from amplitude import utils
 from amplitude.exception import InvalidEventError
-
-
-class PluginType(Enum):
-    BEFORE = 0
-    ENRICHMENT = 1
-    DESTINATION = 2
-    OBSERVE = 3
+from amplitude.worker import Workers
 
 
 class PluginType(Enum):
@@ -42,9 +31,6 @@ class Plugin(abc.ABC):
 
     @abc.abstractmethod
     def execute(self, event: BaseEvent):
-        pass
-
-    def setup(self, client: Amplitude):
         pass
 
 
@@ -77,23 +63,59 @@ class EventPlugin(Plugin):
 
 class DestinationPlugin(EventPlugin):
 
-    def __init__(self, storage: Storage = None, ):
+    def __init__(self):
         super().__init__(PluginType.DESTINATION)
         self.__timeline = Timeline()
+        self.__workers = Workers(self)
         self.__amplitude_client = None
-        self.workers = None
-        self.storage = storage
+        self._endpoint = None
+        self.storage = None
 
     @property
     def timeline(self):
         return self.__timeline
 
+    @property
+    def workers(self):
+        return self.__workers
+
+    @property
+    def endpoint(self):
+        if self._endpoint:
+            return self._endpoint
+        if self.__amplitude_client:
+            return self.__amplitude_client.endpoint
+        return constants.HTTP_API_URL
+
+    @endpoint.setter
+    def endpoint(self, url: str):
+        self._endpoint = url
+
+    @property
+    def logger(self):
+        if self.__amplitude_client:
+            return self.__amplitude_client.logger
+        return logging.getLogger(__name__)
+
+    @property
+    def api_key(self) -> str:
+        if self.__amplitude_client:
+            return self.__amplitude_client.api_key
+        self.logger.error("Missing API key for destination plugin")
+        return ""
+
+    @property
+    def batch_size(self):
+        if self.__amplitude_client:
+            return self.__amplitude_client.configuration.batch_size
+        return constants.BATCH_SIZE
+
     def setup(self, client: Amplitude):
         self.__amplitude_client = client
-        self.__timeline.__amplitude_client = client
-
-    def set_storage(self, storage: Storage):
-        self.storage = storage
+        self.storage = client.configuration.get_storage(self)
+        self.timeline.setup(client)
+        self.workers.setup(client)
+        self.storage.setup(client)
 
     def add(self, plugin):
         self.__timeline.add(plugin)
@@ -107,7 +129,22 @@ class DestinationPlugin(EventPlugin):
         event = self.timeline.process(event)
         if not utils.verify_event(event):
             raise InvalidEventError("Invalid event.")
-        self.storage.push_to_buffer(event)
+        self.storage.push(event)
 
     def start(self):
-        pass
+        self.workers.start()
+
+    def stop(self):
+        self.workers.stop()
+
+    def flush(self):
+        self.workers.flush()
+
+    def get_payload(self, events) -> bytes:
+        payload_body = {
+            "api_key": self.api_key,
+            "events": events
+        }
+        if self.__amplitude_client.options:
+            payload_body["options"] = self.__amplitude_client.options
+        return json.dumps(payload_body).encode('utf8')

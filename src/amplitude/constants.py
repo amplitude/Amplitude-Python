@@ -1,7 +1,9 @@
-HTTP_API_URL = "https://api2.amplitude.com/2/httpapi"
-HTTP_API_URL_EU = "https://api.eu.amplitude.com/2/httpapi"
-BATCH_API_URL = "https://api2.amplitude.com/batch"
-BATCH_API_URL_EU = "https://api.eu.amplitude.com/batch"
+from typing import Final
+
+HTTP_API_URL: Final = "https://api2.amplitude.com/2/httpapi"
+HTTP_API_URL_EU: Final = "https://api.eu.amplitude.com/2/httpapi"
+BATCH_API_URL: Final = "https://api2.amplitude.com/batch"
+BATCH_API_URL_EU: Final = "https://api.eu.amplitude.com/batch"
 
 IDENTIFY_EVENT = "$identify"
 GROUP_IDENTIFY_EVENT = "$groupidentify"
@@ -28,5 +30,8 @@ AMP_REVENUE_EVENT = "revenue_amount"
 
 MAX_PROPERTY_KEYS = 1024
 MAX_STRING_LENGTH = 1024
-
-LOGGER_NAME = "amplitude"
+BATCH_SIZE = 200
+BATCH_INTERVAL = 10.0  # seconds float
+CONNECTION_TIMEOUT = 10.0  # seconds float
+MAX_BUFFER_CAPACITY = 20000
+RETRY_DELAY: Final = [0, 100, 100, 200, 200, 400, 400, 800, 800, 1600, 1600, 3200, 3200]

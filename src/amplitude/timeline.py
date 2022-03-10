@@ -1,19 +1,13 @@
 import logging
 import threading
-from typing import Optional
 
-from amplitude import constants
-from amplitude.client import Amplitude
 from amplitude.plugin import PluginType
 from amplitude.exception import InvalidEventError
 
 
-logger = logging.getLogger(constants.LOGGER_NAME)
-
-
 class Timeline:
 
-    def __init__(self, client: Optional[Amplitude] = None):
+    def __init__(self, client=None):
         self.locks = {
             PluginType.BEFORE: threading.Lock(),
             PluginType.ENRICHMENT: threading.Lock(),
@@ -26,6 +20,15 @@ class Timeline:
         }
         self.__amplitude_client = client
 
+    @property
+    def logger(self):
+        if self.__amplitude_client:
+            return self.__amplitude_client.logger
+        return logging.getLogger(__name__)
+
+    def setup(self, client):
+        self.__amplitude_client = client
+
     def add(self, plugin):
         with self.locks[plugin.plugin_type]:
             self.plugins[plugin.plugin_type].append(plugin)
@@ -34,6 +37,13 @@ class Timeline:
         for plugin_type in self.locks:
             with self.locks[plugin_type]:
                 self.plugins[plugin_type] = [p for p in self.plugins[plugin_type] if p != plugin]
+
+    def flush(self):
+        for destination in self.plugins[PluginType.DESTINATION]:
+            try:
+                destination.flush()
+            except Exception:
+                self.logger.error(f"Error for flush events")
 
     def process(self, event):
         before_result = self.apply_plugins(PluginType.BEFORE, event)
@@ -53,7 +63,7 @@ class Timeline:
                     else:
                         result = plugin.execute(result)
                 except InvalidEventError:
-                    logger.error(f"Invalid event body {event}")
+                    self.logger.error(f"Invalid event body {event}")
                 except Exception:
-                    logger.error(f"Error for apply {plugin_type.name} plugin for event {event}")
+                    self.logger.error(f"Error for apply {plugin_type.name} plugin for event {event}")
         return result
