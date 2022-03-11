@@ -245,7 +245,8 @@ class Workers:
                 while self.storage.total_events == 0:
                     self.storage.lock.wait(self.batch_interval)
                 events = self.storage.pull(self.batch_size)
-                self.threads_pool.submit(self.send, events)
+                if events:
+                    self.threads_pool.submit(self.send, events)
 
     def post(self, url: str, payload: bytes, header=None) -> Response:
         result = Response()

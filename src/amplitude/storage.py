@@ -60,7 +60,7 @@ class InMemoryStorage(Storage):
 
     @property
     def max_retry(self) -> int:
-        return len(self.retry_delay)
+        return max(1, len(self.retry_delay))
 
     def setup(self, client):
         self.__amplitude_client = client
@@ -68,7 +68,7 @@ class InMemoryStorage(Storage):
     def push(self, event: BaseEvent, delay: int = 0, response=None) -> None:
         code = 0
         if response:
-            code = response = code
+            code = response.code
         if event.retry and self.total_events > self.max_capacity:
             self.callback(event, code, "Destination buffer full. Retry temporarily disabled")
             return
