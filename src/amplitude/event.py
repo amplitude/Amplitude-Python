@@ -545,5 +545,17 @@ class Identify:
 
 class Revenue:
 
-    def __init__(self):
-        pass
+    def __init__(self, price: float,
+                 quantity: int = 1,
+                 product_id: Optional[str] = None,
+                 revenue_type: Optional[str] = None,
+                 receipt: Optional[str] = None,
+                 receipt_sig: Optional[str] = None,
+                 properties: Optional[dict] = None):
+        self.price: float = price
+        self.quantity: int = quantity
+        self.product_id: Optional[str] = product_id,
+        self.revenue_type: Optional[str] = revenue_type,
+        self.receipt: Optional[str] = receipt,
+        self.receipt_sig: Optional[str] = receipt_sig,
+        self.properties: Optional[dict] = properties
