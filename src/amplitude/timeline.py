@@ -7,7 +7,7 @@ from amplitude.exception import InvalidEventError
 
 class Timeline:
 
-    def __init__(self, client=None):
+    def __init__(self, configuration=None):
         self.locks = {
             PluginType.BEFORE: threading.Lock(),
             PluginType.ENRICHMENT: threading.Lock(),
@@ -18,16 +18,16 @@ class Timeline:
             PluginType.ENRICHMENT: [],
             PluginType.DESTINATION: []
         }
-        self.__amplitude_client = client
+        self.configuration = configuration
 
     @property
     def logger(self):
-        if self.__amplitude_client:
-            return self.__amplitude_client.logger
+        if self.configuration:
+            return self.configuration.logger
         return logging.getLogger(__name__)
 
-    def setup(self, client):
-        self.__amplitude_client = client
+    def setup(self, configuration):
+        self.configuration = configuration
 
     def add(self, plugin):
         with self.locks[plugin.plugin_type]:

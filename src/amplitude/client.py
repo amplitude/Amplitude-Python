@@ -1,55 +1,22 @@
-from amplitude.event import Revenue, BaseEvent, Identify, IdentifyEvent, GroupIdentifyEvent
+from typing import Optional
+
 from amplitude.config import Config
-from amplitude.plugin import DestinationPlugin
+from amplitude.event import Revenue, BaseEvent, Identify, IdentifyEvent, GroupIdentifyEvent
 from amplitude.timeline import Timeline
 
 
 class Amplitude:
 
-    def __init__(self, api_key, configuration=Config()):
+    def __init__(self, api_key: Optional[str] = None, configuration=Config()):
         self.configuration = configuration
-        self.api_key = api_key
-        self.__timeline = Timeline(self)
-        amplitude_destination = DestinationPlugin()
+        self.configuration.api_key = api_key
+        self.__timeline = Timeline(configuration)
+        amplitude_destination = AmplitudeDestinationPlugin()
         self.add(amplitude_destination)
-        amplitude_destination.setup(self)
+        amplitude_destination.setup(configuration)
 
-    @property
-    def logger(self):
-        return self.configuration.logger
-
-    @logger.setter
-    def logger(self, logger):
-        self.configuration.logger = logger
-
-    def callback(self, event: BaseEvent, code: int, message: str):
-        callback_func = self.configuration.callback
-        event.callback(code, message)
-        if callable(callback_func):
-            try:
-                callback_func(event, code, message)
-            except Exception:
-                self.logger.error(f"Client callback error for event {event}")
-
-    def set_callback(self, callback):
-        self.configuration.callback = callback
-
-    @property
-    def endpoint(self):
-        if self.configuration.is_eu:
-            if self.configuration.is_batch_mode:
-                return self.configuration.batch_api_url_eu
-            else:
-                return self.configuration.batch_api_url
-        else:
-            if self.configuration.is_batch_mode:
-                return self.configuration.api_url_eu
-            else:
-                return self.configuration.api_url
-
-    @property
-    def options(self):
-        return self.configuration.options
+    def init(self, api_key: str):
+        self.configuration.api_key = api_key
 
     def track(self, event):
         self.__timeline.process(event)

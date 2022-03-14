@@ -1,12 +1,9 @@
 import abc
-import json
-import logging
 from enum import Enum
 from typing import Optional
 
 from amplitude.event import BaseEvent, GroupIdentifyEvent, IdentifyEvent, RevenueEvent
 from amplitude import constants
-from amplitude.client import Amplitude
 from amplitude.timeline import Timeline
 from amplitude import utils
 from amplitude.exception import InvalidEventError
@@ -24,10 +21,10 @@ class Plugin(abc.ABC):
 
     def __init__(self, plugin_type: PluginType):
         self.plugin_type: PluginType = plugin_type
-        self.__amplitude_client = None
+        self.configuration = None
 
-    def setup(self, client: Amplitude):
-        self.__amplitude_client = client
+    def setup(self, configuration):
+        self.configuration = configuration
 
     @abc.abstractmethod
     def execute(self, event: BaseEvent):
@@ -66,56 +63,6 @@ class DestinationPlugin(EventPlugin):
     def __init__(self):
         super().__init__(PluginType.DESTINATION)
         self.__timeline = Timeline()
-        self.__workers = Workers(self)
-        self.__amplitude_client = None
-        self._endpoint = None
-        self.storage = None
-
-    @property
-    def timeline(self):
-        return self.__timeline
-
-    @property
-    def workers(self):
-        return self.__workers
-
-    @property
-    def endpoint(self):
-        if self._endpoint:
-            return self._endpoint
-        if self.__amplitude_client:
-            return self.__amplitude_client.endpoint
-        return constants.HTTP_API_URL
-
-    @endpoint.setter
-    def endpoint(self, url: str):
-        self._endpoint = url
-
-    @property
-    def logger(self):
-        if self.__amplitude_client:
-            return self.__amplitude_client.logger
-        return logging.getLogger(__name__)
-
-    @property
-    def api_key(self) -> str:
-        if self.__amplitude_client:
-            return self.__amplitude_client.api_key
-        self.logger.error("Missing API key for destination plugin")
-        return ""
-
-    @property
-    def batch_size(self):
-        if self.__amplitude_client:
-            return self.__amplitude_client.configuration.batch_size
-        return constants.BATCH_SIZE
-
-    def setup(self, client: Amplitude):
-        self.__amplitude_client = client
-        self.storage = client.configuration.get_storage(self)
-        self.timeline.setup(client)
-        self.workers.setup(client)
-        self.storage.setup(client)
 
     def add(self, plugin):
         self.__timeline.add(plugin)
@@ -126,25 +73,45 @@ class DestinationPlugin(EventPlugin):
         return self
 
     def execute(self, event: BaseEvent) -> None:
-        event = self.timeline.process(event)
+        event = self.__timeline.process(event)
+        super().execute(event)
+
+
+class AmplitudeDestinationPlugin(DestinationPlugin):
+
+    def __init__(self):
+        super().__init__()
+        self.workers = Workers()
+        self.storage = None
+        self.configuration = None
+
+    def setup(self, configuration):
+        super().setup(configuration)
+        self.storage = configuration.get_storage()
+        self.__timeline.setup(configuration)
+        self.workers.setup(configuration, self.storage)
+        self.storage.setup(configuration)
+        self.workers.start()
+
+    def execute(self, event: BaseEvent) -> None:
+        event = self.__timeline.process(event)
         if not utils.verify_event(event):
             raise InvalidEventError("Invalid event.")
         self.storage.push(event)
 
-    def start(self):
-        self.workers.start()
-
-    def stop(self):
-        self.workers.stop()
-
     def flush(self):
         self.workers.flush()
 
-    def get_payload(self, events) -> bytes:
-        payload_body = {
-            "api_key": self.api_key,
-            "events": events
-        }
-        if self.__amplitude_client.options:
-            payload_body["options"] = self.__amplitude_client.options
-        return json.dumps(payload_body).encode('utf8')
+
+class ContextPlugin(Plugin):
+
+    def __init__(self):
+        super().__init__(PluginType.BEFORE)
+
+    @staticmethod
+    def apply_context_data(event: BaseEvent):
+        event.library = constants.SDK_LIBRARY + '/' + constants.SDK_VERSION
+
+    def execute(self, event: BaseEvent) -> BaseEvent:
+        self.apply_context_data(event)
+        return event

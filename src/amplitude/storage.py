@@ -1,9 +1,9 @@
 import abc
 from threading import Condition
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 from amplitude.event import BaseEvent
-from amplitude import utils, constants
+from amplitude import utils
 
 
 class Storage(abc.ABC):
@@ -28,55 +28,44 @@ class Storage(abc.ABC):
 class StorageProvider(abc.ABC):
 
     @abc.abstractmethod
-    def get_storage(self, destination) -> Storage:
+    def get_storage(self) -> Storage:
         pass
 
 
 class InMemoryStorage(Storage):
-    def __init__(self, destination):
+    def __init__(self):
         self.total_events: int = 0
         self.new_events: int = 0
         self.retry_events: int = 0
         self.buffer_data: List[Tuple[int, BaseEvent]] = []
         self.buffer_lock_cv = Condition()
-        self.destination = destination
-        self.__amplitude_client = None
+        self.configuration = None
 
     @property
     def lock(self):
         return self.buffer_lock_cv
 
     @property
-    def max_capacity(self) -> int:
-        if self.__amplitude_client:
-            return self.__amplitude_client.configuration.buffer_capacity
-        return constants.MAX_BUFFER_CAPACITY
-
-    @property
-    def retry_delay(self) -> List[int]:
-        if self.__amplitude_client:
-            return self.__amplitude_client.configuration.retry_delay
-        return constants.RETRY_DELAY[:]
-
-    @property
     def max_retry(self) -> int:
-        return max(1, len(self.retry_delay))
+        return max(1, len(self.configuration.retry_timeouts))
 
-    def setup(self, client):
-        self.__amplitude_client = client
+    @property
+    def first_timestamp(self) -> int:
+        if self.buffer_data:
+            return self.buffer_data[0][0]
+        return utils.current_milliseconds()
 
-    def push(self, event: BaseEvent, delay: int = 0, response=None) -> None:
-        code = 0
-        if response:
-            code = response.code
-        if event.retry and self.total_events > self.max_capacity:
-            self.callback(event, code, "Destination buffer full. Retry temporarily disabled")
-            return
+    def setup(self, configuration):
+        self.configuration = configuration
+
+    def push(self, event: BaseEvent, delay: int = 0) -> Tuple[bool, Optional[str]]:
+        if event.retry and self.total_events > self.configuration.buffer_capacity:
+            return False, "Destination buffer full. Retry temporarily disabled"
         if event.retry >= self.max_retry:
-            self.callback(event, code, f"Event reached max retry times {self.max_retry}.")
-            return
+            return False, f"Event reached max retry times {self.max_retry}."
         time_stamp = delay + self._get_retry_delay(event.retry) + utils.current_milliseconds()
         self._insert_event(time_stamp, event)
+        return True, None
 
     def pull(self, batch_size: int) -> List[BaseEvent]:
         result = []
@@ -107,12 +96,6 @@ class InMemoryStorage(Storage):
             self.buffer_data = []
             return result
 
-    def callback(self, event, code, message):
-        if self.__amplitude_client:
-            self.__amplitude_client.callback(event, code, message)
-        else:
-            event.callback(code, message)
-
     def _insert_event(self, time_stamp: int, event: BaseEvent):
         with self.lock:
             left, right = 0, len(self.buffer_data) - 1
@@ -128,11 +111,11 @@ class InMemoryStorage(Storage):
                 self.retry_events += 1
             else:
                 self.new_events += 1
-            if self.total_events >= self.destination.batch_size:
+            if self.total_events >= self.configuration.flush_queue_size:
                 self.lock.notify()
 
     def _get_retry_delay(self, retry: int) -> int:
-        retry_delay = self.retry_delay
+        retry_delay = self.configuration.retry_timeouts
         if retry >= len(retry_delay):
             return retry_delay[-1]
         if retry < 0:
@@ -142,5 +125,5 @@ class InMemoryStorage(Storage):
 
 class InMemoryStorageProvider(StorageProvider):
 
-    def get_storage(self, destination) -> InMemoryStorage:
-        return InMemoryStorage(destination)
+    def get_storage(self) -> InMemoryStorage:
+        return InMemoryStorage()
