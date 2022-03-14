@@ -15,9 +15,6 @@ class Amplitude:
         self.add(amplitude_destination)
         amplitude_destination.setup(configuration)
 
-    def init(self, api_key: str):
-        self.configuration.api_key = api_key
-
     def track(self, event):
         self.__timeline.process(event)
 
