@@ -52,12 +52,11 @@ class Workers:
     def buffer_consumer(self):
         while self.is_active:
             with self.storage.lock:
-                while self.storage.total_events == 0:
-                    self.storage.lock.wait(self.configuration.flush_interval)
                 events = self.storage.pull(self.configuration.flush_queue_size)
                 if events:
                     self.threads_pool.submit(self.send, events)
                 else:
-                    wait_time = min(abs(utils.current_milliseconds() - self.storage.first_timestamp) / 1000,
+                    wait_time = min((self.storage.first_timestamp - utils.current_milliseconds()) / 1000,
                                     self.configuration.flush_interval)
-                    self.storage.lock.wait(wait_time)
+                    if wait_time > 0:
+                        self.storage.lock.wait(wait_time)

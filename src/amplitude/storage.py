@@ -3,7 +3,7 @@ from threading import Condition
 from typing import List, Tuple, Optional
 
 from amplitude.event import BaseEvent
-from amplitude import utils
+from amplitude import utils, constants
 
 
 class Storage(abc.ABC):
@@ -47,7 +47,7 @@ class InMemoryStorage(Storage):
 
     @property
     def max_retry(self) -> int:
-        return max(1, len(self.configuration.retry_timeouts))
+        return len(constants.RETRY_TIMEOUTS)
 
     @property
     def first_timestamp(self) -> int:
@@ -59,7 +59,7 @@ class InMemoryStorage(Storage):
         self.configuration = configuration
 
     def push(self, event: BaseEvent, delay: int = 0) -> Tuple[bool, Optional[str]]:
-        if event.retry and self.total_events > self.configuration.buffer_capacity:
+        if event.retry and self.total_events > constants.MAX_BUFFER_CAPACITY:
             return False, "Destination buffer full. Retry temporarily disabled"
         if event.retry >= self.max_retry:
             return False, f"Event reached max retry times {self.max_retry}."
@@ -73,7 +73,7 @@ class InMemoryStorage(Storage):
         with self.lock:
             index = 0
             new_count, retry_count = 0, 0
-            while index < self.total_events and index < batch_size and current_time > self.buffer_data[index][0]:
+            while index < self.total_events and index < batch_size and current_time >= self.buffer_data[index][0]:
                 event = self.buffer_data[index][1]
                 if event.retry:
                     retry_count += 1
@@ -115,12 +115,11 @@ class InMemoryStorage(Storage):
                 self.lock.notify()
 
     def _get_retry_delay(self, retry: int) -> int:
-        retry_delay = self.configuration.retry_timeouts
-        if retry >= len(retry_delay):
-            return retry_delay[-1]
+        if retry >= constants.RETRY_TIMEOUTS:
+            return constants.RETRY_TIMEOUTS[-1]
         if retry < 0:
-            return retry_delay[0]
-        return retry_delay[retry]
+            return constants.RETRY_TIMEOUTS[0]
+        return constants.RETRY_TIMEOUTS[retry]
 
 
 class InMemoryStorageProvider(StorageProvider):

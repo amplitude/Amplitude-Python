@@ -13,8 +13,6 @@ class Config:
         self.storage_provider: StorageProvider = InMemoryStorageProvider()
         self.flush_queue_size: int = constants.FLUSH_SIZE
         self.flush_interval: float = constants.FLUSH_INTERVAL
-        self.buffer_capacity: int = constants.MAX_BUFFER_CAPACITY
-        self.retry_timeouts: List[int] = constants.RETRY_TIMEOUTS[:]
         self.logger = logging.getLogger(__name__)
         self.min_id_length: Optional[int] = None
         self.callback: Optional[Callable[[BaseEvent, int, Optional[str]], None]] = None
