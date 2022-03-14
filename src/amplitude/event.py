@@ -4,7 +4,6 @@ from typing import Callable, Optional, Union
 
 from amplitude import constants
 
-
 PLAN_KEY_MAPPING = {
     "branch": ["branch", str],
     "source": ["source", str],
@@ -551,7 +550,8 @@ class Revenue:
                  revenue_type: Optional[str] = None,
                  receipt: Optional[str] = None,
                  receipt_sig: Optional[str] = None,
-                 properties: Optional[dict] = None):
+                 properties: Optional[dict] = None,
+                 revenue: Optional[float] = None):
         self.price: float = price
         self.quantity: int = quantity
         self.product_id: Optional[str] = product_id,
@@ -559,3 +559,28 @@ class Revenue:
         self.receipt: Optional[str] = receipt,
         self.receipt_sig: Optional[str] = receipt_sig,
         self.properties: Optional[dict] = properties
+        self.revenue: Optional[float] = revenue
+
+    def set_receipt(self, receipt: str, receipt_signature: str):
+        self.receipt = receipt
+        self.receipt_sig = receipt_signature
+        return self
+
+    def is_valid(self):
+        return isinstance(self.price, float)
+
+    def to_revenue_event(self) -> RevenueEvent:
+        return RevenueEvent(event_properties=self.get_event_property())
+
+    def get_event_property(self):
+        result = {}
+        if self.properties:
+            result = self.properties.copy()
+        result.update({constants.REVENUE_PRODUCT_ID: self.product_id,
+                       constants.REVENUE_QUANTITY: self.quantity,
+                       constants.REVENUE_PRICE: self.price,
+                       constants.REVENUE_TYPE: self.revenue_type,
+                       constants.REVENUE_RECEIPT: self.receipt,
+                       constants.REVENUE_RECEIPT_SIG: self.receipt_sig,
+                       constants.REVENUE: self.revenue})
+        return result
