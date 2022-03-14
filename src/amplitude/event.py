@@ -570,17 +570,17 @@ class Revenue:
         return isinstance(self.price, float)
 
     def to_revenue_event(self) -> RevenueEvent:
-        return RevenueEvent(event_properties=self.get_event_property())
+        return RevenueEvent(event_properties=self.get_event_properties())
 
-    def get_event_property(self):
-        result = {}
+    def get_event_properties(self):
+        event_properties = {}
         if self.properties:
-            result = self.properties.copy()
-        result.update({constants.REVENUE_PRODUCT_ID: self.product_id,
-                       constants.REVENUE_QUANTITY: self.quantity,
-                       constants.REVENUE_PRICE: self.price,
-                       constants.REVENUE_TYPE: self.revenue_type,
-                       constants.REVENUE_RECEIPT: self.receipt,
-                       constants.REVENUE_RECEIPT_SIG: self.receipt_sig,
-                       constants.REVENUE: self.revenue})
-        return result
+            event_properties = self.properties.copy()
+        event_properties.update({constants.REVENUE_PRODUCT_ID: self.product_id,
+                                 constants.REVENUE_QUANTITY: self.quantity,
+                                 constants.REVENUE_PRICE: self.price,
+                                 constants.REVENUE_TYPE: self.revenue_type,
+                                 constants.REVENUE_RECEIPT: self.receipt,
+                                 constants.REVENUE_RECEIPT_SIG: self.receipt_sig,
+                                 constants.REVENUE: self.revenue})
+        return event_properties
