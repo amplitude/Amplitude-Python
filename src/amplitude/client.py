@@ -11,8 +11,8 @@ class Amplitude:
         self.api_key = api_key
         self.__timeline = Timeline(self)
         amplitude_destination = DestinationPlugin()
-        amplitude_destination.setup(self)
         self.add(amplitude_destination)
+        amplitude_destination.setup(self)
 
     @property
     def logger(self):
@@ -35,10 +35,6 @@ class Amplitude:
         self.configuration.callback = callback
 
     @property
-    def timeline(self):
-        return self.__timeline
-
-    @property
     def endpoint(self):
         if self.configuration.is_eu:
             if self.configuration.is_batch_mode:
@@ -55,8 +51,8 @@ class Amplitude:
     def options(self):
         return self.configuration.options
 
-    def track(self, event: BaseEvent):
-        self.timeline.process(event)
+    def track(self, event):
+        self.__timeline.process(event)
 
     def identify(self, user_id: str, identify_obj: Identify):
         if identify_obj.is_valid():
@@ -81,12 +77,12 @@ class Amplitude:
             self.track(revenue_obj.to_revenue_event())
 
     def flush(self):
-        self.timeline.flush()
+        self.__timeline.flush()
 
     def add(self, plugin):
-        self.timeline.add(plugin)
+        self.__timeline.add(plugin)
         return self
 
     def remove(self, plugin):
-        self.timeline.remove(plugin)
+        self.__timeline.remove(plugin)
         return self
