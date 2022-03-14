@@ -18,7 +18,6 @@ class Config:
         self.callback: Optional[Callable[[BaseEvent, int, Optional[str]], None]] = None
         self.is_eu: bool = False
         self.is_batch_mode: bool = False
-        self.timeout: float = constants.CONNECTION_TIMEOUT
         self._url: Optional[str] = None
 
     def get_storage(self) -> Storage:

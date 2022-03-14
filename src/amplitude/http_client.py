@@ -4,6 +4,8 @@ from socket import timeout
 from typing import Optional
 from urllib import request, response
 
+from amplitude import constants
+
 JSON_HEADER = {
     "Content-Type": "application/json; charset=UTF-8",
     "Accept": "*/*"
@@ -99,14 +101,14 @@ class Response:
 class HttpClient:
 
     @staticmethod
-    def post(url: str, payload: bytes, timeouts, header=None) -> Response:
+    def post(url: str, payload: bytes, header=None) -> Response:
         result = Response()
         try:
             if not header:
                 req = request.Request(url, data=payload, headers=JSON_HEADER)
             else:
                 req = request.Request(url, data=payload, headers=header)
-            res = request.urlopen(req, timeout=timeouts)
+            res = request.urlopen(req, timeout=constants.CONNECTION_TIMEOUT)
             result.parse(res)
         except timeout:
             result.code = 408

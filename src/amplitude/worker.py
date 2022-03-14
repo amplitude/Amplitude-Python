@@ -37,7 +37,7 @@ class Workers:
     def send(self, events):
         url = self.configuration.server_url
         payload = self.get_payload([event.get_event_body() for event in events])
-        res = HttpClient.post(url, payload, self.configuration.timeout)
+        res = HttpClient.post(url, payload)
         self.response_processor.process_response(res, events)
 
     def get_payload(self, events) -> bytes:
