@@ -620,10 +620,10 @@ class Revenue:
                  revenue: Optional[float] = None):
         self.price: float = price
         self.quantity: int = quantity
-        self.product_id: Optional[str] = product_id,
-        self.revenue_type: Optional[str] = revenue_type,
-        self.receipt: Optional[str] = receipt,
-        self.receipt_sig: Optional[str] = receipt_sig,
+        self.product_id: Optional[str] = product_id
+        self.revenue_type: Optional[str] = revenue_type
+        self.receipt: Optional[str] = receipt
+        self.receipt_sig: Optional[str] = receipt_sig
         self.properties: Optional[dict] = properties
         self.revenue: Optional[float] = revenue
 
