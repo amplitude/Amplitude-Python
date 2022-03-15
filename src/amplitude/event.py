@@ -603,7 +603,7 @@ class Identify:
             return False
         if operation == constants.IDENTITY_OP_ADD:
             return isinstance(value, int) or isinstance(value, float)
-        if operation != constants.IDENTITY_OP_UNSET and operation != constants.IDENTITY_OP_REMOVE:
+        if operation != constants.IDENTITY_OP_UNSET:
             return is_validate_properties(key, value)
         return True
 
