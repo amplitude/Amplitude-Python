@@ -539,7 +539,73 @@ class RevenueEvent(BaseEvent):
 class Identify:
 
     def __init__(self):
-        pass
+        self._properties_set = set()
+        self._properties = {}
+
+    @property
+    def user_properties(self):
+        return self._properties.copy()
+
+    def set(self, key: str, value: Union[int, float, str, list, dict, bool]):
+        self._set_user_property(constants.IDENTITY_OP_SET, key, value)
+        return self
+
+    def set_once(self, key: str, value: Union[int, float, str, list, dict, bool]):
+        self._set_user_property(constants.IDENTITY_OP_SET_ONCE, key, value)
+        return self
+
+    def append(self, key: str, value: Union[int, float, str, list, dict, bool]):
+        self._set_user_property(constants.IDENTITY_OP_APPEND, key, value)
+        return self
+
+    def prepend(self, key: str, value: Union[int, float, str, list, dict, bool]):
+        self._set_user_property(constants.IDENTITY_OP_PREPEND, key, value)
+        return self
+
+    def pre_insert(self, key: str, value: Union[int, float, str, list, dict, bool]):
+        self._set_user_property(constants.IDENTITY_OP_PRE_INSERT, key, value)
+        return self
+
+    def post_insert(self, key: str, value: Union[int, float, str, list, dict, bool]):
+        self._set_user_property(constants.IDENTITY_OP_POST_INSERT, key, value)
+        return self
+
+    def remove(self, key: str, value: Union[int, float, str, list, dict, bool]):
+        self._set_user_property(constants.IDENTITY_OP_REMOVE, key, value)
+        return self
+
+    def add(self, key: str, value: Union[int, float]):
+        self._set_user_property(constants.IDENTITY_OP_ADD, key, value)
+        return self
+
+    def unset(self, key: str):
+        self._set_user_property(constants.IDENTITY_OP_UNSET, key, constants.UNSET_VALUE)
+        return self
+
+    def clear_all(self):
+        self._properties = {constants.IDENTITY_OP_CLEAR_ALL: constants.UNSET_VALUE}
+        return self
+
+    def is_valid(self):
+        if self._properties:
+            return True
+        return False
+
+    def _set_user_property(self, operation, key, value):
+        if self._validate(operation, key, value):
+            if operation not in self._properties:
+                self._properties[operation] = {}
+            self._properties[operation][key] = value
+            self._properties_set.add(key)
+
+    def _validate(self, operation, key, value):
+        if constants.IDENTITY_OP_CLEAR_ALL in self._properties or key in self._properties_set:
+            return False
+        if operation == constants.IDENTITY_OP_ADD:
+            return isinstance(value, int) or isinstance(value, float)
+        if operation != constants.IDENTITY_OP_UNSET:
+            return is_validate_properties(key, value)
+        return True
 
 
 class Revenue:
@@ -554,10 +620,10 @@ class Revenue:
                  revenue: Optional[float] = None):
         self.price: float = price
         self.quantity: int = quantity
-        self.product_id: Optional[str] = product_id,
-        self.revenue_type: Optional[str] = revenue_type,
-        self.receipt: Optional[str] = receipt,
-        self.receipt_sig: Optional[str] = receipt_sig,
+        self.product_id: Optional[str] = product_id
+        self.revenue_type: Optional[str] = revenue_type
+        self.receipt: Optional[str] = receipt
+        self.receipt_sig: Optional[str] = receipt_sig
         self.properties: Optional[dict] = properties
         self.revenue: Optional[float] = revenue
 
@@ -584,3 +650,32 @@ class Revenue:
                                  constants.REVENUE_RECEIPT_SIG: self.receipt_sig,
                                  constants.REVENUE: self.revenue})
         return event_properties
+
+
+def is_validate_properties(key, value):
+    if not isinstance(key, str):
+        return False
+    if isinstance(value, list):
+        result = True
+        for element in value:
+            if isinstance(element, list):
+                return False
+            if isinstance(element, dict):
+                result = result and is_validate_object(element)
+            elif not (isinstance(element, str) or isinstance(element, int) or isinstance(element, float)):
+                result = False
+            if not result:
+                break
+        return result
+    if isinstance(value, dict):
+        return is_validate_object(value)
+    if not (isinstance(value, str) or isinstance(value, int) or isinstance(value, float) or isinstance(value, bool)):
+        return False
+    return True
+
+
+def is_validate_object(obj):
+    for key, value in obj.items():
+        if not is_validate_properties(key, value):
+            return False
+    return True
