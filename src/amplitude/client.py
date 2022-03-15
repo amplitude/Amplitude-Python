@@ -2,6 +2,7 @@ from typing import Optional
 
 from amplitude.config import Config
 from amplitude.event import Revenue, BaseEvent, Identify, IdentifyEvent, GroupIdentifyEvent
+from amplitude.plugin import AmplitudeDestinationPlugin
 from amplitude.timeline import Timeline
 
 
@@ -15,7 +16,7 @@ class Amplitude:
         self.add(amplitude_destination)
         amplitude_destination.setup(configuration)
 
-    def track(self, event):
+    def track(self, event: BaseEvent):
         self.__timeline.process(event)
 
     def identify(self, user_id: str, identify_obj: Identify):
