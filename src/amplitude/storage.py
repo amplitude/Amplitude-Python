@@ -53,7 +53,7 @@ class InMemoryStorage(Storage):
     def first_timestamp(self) -> int:
         if self.buffer_data:
             return self.buffer_data[0][0]
-        return utils.current_milliseconds()
+        return float("inf")
 
     def setup(self, configuration):
         self.configuration = configuration
