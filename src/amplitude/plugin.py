@@ -21,10 +21,9 @@ class Plugin(abc.ABC):
 
     def __init__(self, plugin_type: PluginType):
         self.plugin_type: PluginType = plugin_type
-        self.configuration = None
 
-    def setup(self, configuration):
-        self.configuration = configuration
+    def setup(self, client):
+        pass
 
     @abc.abstractmethod
     def execute(self, event: BaseEvent):
@@ -64,6 +63,9 @@ class DestinationPlugin(EventPlugin):
         super().__init__(PluginType.DESTINATION)
         self.__timeline = Timeline()
 
+    def setup(self, client):
+        self.__timeline.setup(client)
+
     def add(self, plugin):
         self.__timeline.add(plugin)
         return self
@@ -85,12 +87,12 @@ class AmplitudeDestinationPlugin(DestinationPlugin):
         self.storage = None
         self.configuration = None
 
-    def setup(self, configuration):
-        super().setup(configuration)
-        self.storage = configuration.get_storage()
-        self.__timeline.setup(configuration)
-        self.workers.setup(configuration, self.storage)
-        self.storage.setup(configuration)
+    def setup(self, client):
+        super().setup(client)
+        self.configuration = client.configuration
+        self.storage = client.configuration.get_storage()
+        self.workers.setup(client.configuration, self.storage)
+        self.storage.setup(client.configuration)
         self.workers.start()
 
     def execute(self, event: BaseEvent) -> None:

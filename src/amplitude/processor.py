@@ -22,39 +22,15 @@ class ResponseProcessor:
             if res.missing_field:
                 self.callback(events, res.code, f"Request missing required field {res.missing_field}")
             else:
-                invalid_set = set()
+                invalid_index_set = res.invalid_or_silenced_index()
                 events_for_retry = []
-                if res.events_with_invalid_fields:
-                    for field in res.events_with_invalid_fields:
-                        events_for_callback = []
-                        for index in res.events_with_invalid_fields[field]:
-                            if index in invalid_set:
-                                continue
-                            invalid_set.add(index)
-                            events_for_callback.append(events[index])
-                        message = f"Invalid field {field}"
-                        self.callback(events_for_callback, res.code, message)
-                if res.events_with_missing_fields:
-                    for field in res.events_with_missing_fields:
-                        events_for_callback = []
-                        for index in res.events_with_missing_fields[field]:
-                            if index in invalid_set:
-                                continue
-                            invalid_set.add(index)
-                            events_for_callback.append(events[index])
-                        message = f"Missing field {field}"
-                        self.callback(events_for_callback, res.code, message)
-                if res.silenced_events:
-                    events_for_callback = []
-                    for index in res.silenced_events:
-                        if index in invalid_set:
-                            continue
-                        invalid_set.add(index)
-                        events_for_callback.append(events[index])
-                    self.callback(events_for_callback, res.code, "Silenced device for event")
+                events_for_callback = []
                 for index, event in enumerate(events):
-                    if index not in invalid_set:
+                    if index in invalid_index_set:
+                        events_for_callback.append(event)
+                    else:
                         events_for_retry.append(event)
+                self.callback(events_for_callback, res.code, "Invalid or silenced events")
                 self.push_to_storage(events_for_retry, 0, res)
         elif res.status == HttpStatus.TOO_MANY_REQUESTS:
             events_for_callback = []

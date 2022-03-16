@@ -351,7 +351,6 @@ class GroupIdentifyEvent(BaseEvent):
                  session_id: Optional[int] = None,
                  insert_id: Optional[str] = None,
                  plan: Optional[Plan] = None,
-
                  callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None):
         super().__init__(constants.GROUP_IDENTIFY_EVENT, user_id,
                          device_id,

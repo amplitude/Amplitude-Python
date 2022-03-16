@@ -26,8 +26,8 @@ class Timeline:
             return self.configuration.logger
         return logging.getLogger(__name__)
 
-    def setup(self, configuration):
-        self.configuration = configuration
+    def setup(self, client):
+        self.configuration = client.configuration
 
     def add(self, plugin):
         with self.locks[plugin.plugin_type]:

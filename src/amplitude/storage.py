@@ -35,8 +35,6 @@ class StorageProvider(abc.ABC):
 class InMemoryStorage(Storage):
     def __init__(self):
         self.total_events: int = 0
-        self.new_events: int = 0
-        self.retry_events: int = 0
         self.buffer_data: List[Tuple[int, BaseEvent]] = []
         self.buffer_lock_cv = Condition()
         self.configuration = None
@@ -72,26 +70,17 @@ class InMemoryStorage(Storage):
         current_time = utils.current_milliseconds()
         with self.lock:
             index = 0
-            new_count, retry_count = 0, 0
             while index < self.total_events and index < batch_size and current_time >= self.buffer_data[index][0]:
                 event = self.buffer_data[index][1]
-                if event.retry:
-                    retry_count += 1
-                else:
-                    new_count += 1
                 result.append(event)
                 index += 1
             self.buffer_data = self.buffer_data[index:]
             self.total_events -= index
-            self.new_events -= new_count
-            self.retry_events -= retry_count
         return result
 
     def pull_all(self) -> List[BaseEvent]:
         with self.lock:
             self.total_events = 0
-            self.new_events = 0
-            self.retry_events = 0
             result = [element[1] for element in self.buffer_data]
             self.buffer_data = []
             return result
@@ -107,10 +96,6 @@ class InMemoryStorage(Storage):
                     left = mid + 1
             self.buffer_data.insert(left, (time_stamp, event))
             self.total_events += 1
-            if event.retry:
-                self.retry_events += 1
-            else:
-                self.new_events += 1
             if self.total_events >= self.configuration.flush_queue_size:
                 self.lock.notify()
 

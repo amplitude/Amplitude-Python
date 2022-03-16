@@ -81,6 +81,18 @@ class Response:
             return True
         return False
 
+    def invalid_or_silenced_index(self):
+        result = set()
+        if self.events_with_missing_fields:
+            for field in self.events_with_missing_fields:
+                result.update(self.events_with_missing_fields[field])
+        if self.events_with_invalid_fields:
+            for field in self.events_with_invalid_fields:
+                result.update(self.events_with_invalid_fields[field])
+        if self.silenced_events:
+            result.update(self.silenced_events)
+        return result
+
     @staticmethod
     def get_status(code: int) -> HttpStatus:
         if 200 <= code < 300:
