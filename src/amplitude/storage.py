@@ -47,13 +47,13 @@ class InMemoryStorage(Storage):
 
     @property
     def max_retry(self) -> int:
-        return len(constants.RETRY_TIMEOUTS)
+        return self.configuration.flush_max_retries
 
     @property
     def first_timestamp(self) -> int:
         if self.buffer_data:
             return self.buffer_data[0][0]
-        return float("inf")
+        return utils.current_milliseconds() + self.configuration.flush_interval_millis
 
     def setup(self, configuration):
         self.configuration = configuration
@@ -115,11 +115,11 @@ class InMemoryStorage(Storage):
                 self.lock.notify()
 
     def _get_retry_delay(self, retry: int) -> int:
-        if retry >= constants.RETRY_TIMEOUTS:
-            return constants.RETRY_TIMEOUTS[-1]
-        if retry < 0:
-            return constants.RETRY_TIMEOUTS[0]
-        return constants.RETRY_TIMEOUTS[retry]
+        if retry > self.configuration.flush_max_retries:
+            return 3200
+        if retry <= 0:
+            return 0
+        return 100 * (2 ** ((retry - 1) // 2))
 
 
 class InMemoryStorageProvider(StorageProvider):

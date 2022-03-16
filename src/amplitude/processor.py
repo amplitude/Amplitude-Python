@@ -83,6 +83,9 @@ class ResponseProcessor:
 
     def callback(self, events, code, message):
         for event in events:
-            if callable(self.configuration.callback):
-                self.configuration.callback(event, code, message)
-            event.callback(code, message)
+            try:
+                if callable(self.configuration.callback):
+                    self.configuration.callback(event, code, message)
+                event.callback(code, message)
+            except:
+                self.configuration.logger.error(f"Error callback for event {event}")

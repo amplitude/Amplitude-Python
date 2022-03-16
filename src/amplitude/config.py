@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, Callable, List
+from typing import Optional, Callable
 
 from amplitude import constants
 from amplitude.event import BaseEvent
@@ -12,12 +12,14 @@ class Config:
         self.api_key = None
         self.storage_provider: StorageProvider = InMemoryStorageProvider()
         self.flush_queue_size: int = constants.FLUSH_SIZE
-        self.flush_interval: float = constants.FLUSH_INTERVAL
+        self.flush_interval_millis: int = constants.FLUSH_INTERVAL_MILLIS
+        self.flush_max_retries = 12
         self.logger = logging.getLogger(__name__)
         self.min_id_length: Optional[int] = None
         self.callback: Optional[Callable[[BaseEvent, int, Optional[str]], None]] = None
-        self.is_eu: bool = False
-        self.is_batch_mode: bool = False
+        self.server_zone: str = "US"
+        self.use_batch: bool = False
+        self.opt_out = False
         self._url: Optional[str] = None
 
     def get_storage(self) -> Storage:
@@ -25,7 +27,7 @@ class Config:
 
     def is_valid(self) -> bool:
         if (not self.api_key) or (self.flush_queue_size <= 0) or (
-                self.flush_interval <= 0) or (not self.is_min_id_length_valid()):
+                self.flush_interval_millis <= 0) or (not self.is_min_id_length_valid()):
             return False
         return True
 
@@ -39,13 +41,13 @@ class Config:
     def server_url(self):
         if self._url:
             return self._url
-        if self.is_eu:
-            if self.is_batch_mode:
+        if self.server_zone == constants.EU_ZONE:
+            if self.use_batch:
                 return constants.BATCH_API_URL_EU
             else:
                 return constants.BATCH_API_URL
         else:
-            if self.is_batch_mode:
+            if self.use_batch:
                 return constants.HTTP_API_URL_EU
             else:
                 return constants.HTTP_API_URL

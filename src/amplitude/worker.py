@@ -56,7 +56,6 @@ class Workers:
                 if events:
                     self.threads_pool.submit(self.send, events)
                 else:
-                    wait_time = min((self.storage.first_timestamp - utils.current_milliseconds()) / 1000,
-                                    self.configuration.flush_interval)
+                    wait_time = self.storage.first_timestamp - utils.current_milliseconds()
                     if wait_time > 0:
-                        self.storage.lock.wait(wait_time)
+                        self.storage.lock.wait(wait_time / 1000)

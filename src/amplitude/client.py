@@ -19,27 +19,34 @@ class Amplitude:
     def track(self, event: BaseEvent):
         self.__timeline.process(event)
 
-    def identify(self, user_id: str, identify_obj: Identify):
+    def identify(self, user_id: str, identify_obj: Identify, **kwargs):
         if identify_obj.is_valid():
             event = IdentifyEvent(user_id)
+            for key, value in kwargs.items():
+                event[key] = value
             event.user_properties = identify_obj.user_properties
             self.track(event)
         else:
             self.configuration.logger.error("Empty identify properties")
 
-    def group_identify(self, user_id: str, group_type: str, group_name: str, identify_obj: Identify):
+    def group_identify(self, user_id: str, group_type: str, group_name: str, identify_obj: Identify, **kwargs):
         if identify_obj.is_valid():
             event = GroupIdentifyEvent(user_id=user_id, groups={group_type: group_name})
+            for key, value in kwargs.items():
+                event[key] = value
             event.group_properties = identify_obj.user_properties
             self.track(event)
         else:
             self.configuration.logger.error("Empty group identify properties")
 
-    def revenue(self, revenue_obj: Revenue):
+    def revenue(self, revenue_obj: Revenue, **kwargs):
         if not revenue_obj.is_valid():
             self.configuration.logger.error("Missing price for revenue event")
         else:
-            self.track(revenue_obj.to_revenue_event())
+            event = revenue_obj.to_revenue_event()
+            for key, value in kwargs.items():
+                event[key] = value
+            self.track(event)
 
     def flush(self):
         self.__timeline.flush()
