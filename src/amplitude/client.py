@@ -2,7 +2,7 @@ from typing import Optional, Callable
 
 from amplitude.config import Config
 from amplitude.event import Revenue, BaseEvent, Identify, IdentifyEvent, GroupIdentifyEvent, Plan
-from amplitude.plugin import AmplitudeDestinationPlugin
+from amplitude.plugin import AmplitudeDestinationPlugin, ContextPlugin
 from amplitude.timeline import Timeline
 
 
@@ -11,9 +11,10 @@ class Amplitude:
     def __init__(self, api_key: Optional[str] = None, configuration=Config()):
         self.configuration = configuration
         self.configuration.api_key = api_key
-        self.__timeline = Timeline(configuration)
-        amplitude_destination = AmplitudeDestinationPlugin()
-        self.add(amplitude_destination)
+        self.__timeline = Timeline()
+        self.__timeline.setup(self)
+        self.add(AmplitudeDestinationPlugin())
+        self.add(ContextPlugin)
 
     def track(self, event: BaseEvent):
         self.__timeline.process(event)

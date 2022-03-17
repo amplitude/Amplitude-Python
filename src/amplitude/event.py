@@ -68,6 +68,7 @@ EVENT_KEY_MAPPING = {
     "event_id": ["event_id", int],
     "session_id": ["session_id", int],
     "insert_id": ["insert_id", str],
+    "library": ["library", str],
     "plan": ["plan", Plan],
     "group_properties": ["group_properties", dict]
 }
@@ -139,6 +140,7 @@ class EventOptions:
         self.event_id: Optional[int] = None
         self.session_id: Optional[int] = None
         self.insert_id: Optional[str] = None
+        self.library: Optional[str] = None
         self.plan: Optional[Plan] = None
         self["user_id"] = user_id
         self["device_id"] = device_id

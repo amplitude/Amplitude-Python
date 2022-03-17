@@ -36,6 +36,7 @@ class InMemoryStorage(Storage):
     def __init__(self):
         self.total_events: int = 0
         self.buffer_data: List[Tuple[int, BaseEvent]] = []
+        self.ready_queue: List[BaseEvent] = []
         self.buffer_lock_cv = Condition()
         self.configuration = None
 
@@ -48,10 +49,10 @@ class InMemoryStorage(Storage):
         return self.configuration.flush_max_retries
 
     @property
-    def first_timestamp(self) -> int:
+    def wait_time(self) -> int:
         if self.buffer_data:
-            return self.buffer_data[0][0]
-        return utils.current_milliseconds() + self.configuration.flush_interval_millis
+            return min(self.buffer_data[0][0] - utils.current_milliseconds(), self.configuration.flush_interval_millis)
+        return self.configuration.flush_interval_millis
 
     def setup(self, configuration):
         self.configuration = configuration
@@ -61,42 +62,51 @@ class InMemoryStorage(Storage):
             return False, "Destination buffer full. Retry temporarily disabled"
         if event.retry >= self.max_retry:
             return False, f"Event reached max retry times {self.max_retry}."
-        time_stamp = delay + self._get_retry_delay(event.retry) + utils.current_milliseconds()
-        self._insert_event(time_stamp, event)
+        total_delay = delay + self._get_retry_delay(event.retry)
+        self._insert_event(total_delay, event)
         return True, None
 
     def pull(self, batch_size: int) -> List[BaseEvent]:
-        result = []
         current_time = utils.current_milliseconds()
         with self.lock:
+            result = self.ready_queue[:batch_size]
+            self.ready_queue = self.ready_queue[batch_size:]
             index = 0
-            while index < self.total_events and index < batch_size and current_time >= self.buffer_data[index][0]:
+            while index < len(self.buffer_data) and index < (batch_size - len(result)) and current_time >= self.buffer_data[index][0]:
                 event = self.buffer_data[index][1]
                 result.append(event)
                 index += 1
             self.buffer_data = self.buffer_data[index:]
-            self.total_events -= index
+            self.total_events -= len(result)
         return result
 
     def pull_all(self) -> List[BaseEvent]:
         with self.lock:
             self.total_events = 0
-            result = [element[1] for element in self.buffer_data]
+            result = self.ready_queue + [element[1] for element in self.buffer_data]
             self.buffer_data = []
+            self.ready_queue = []
             return result
 
-    def _insert_event(self, time_stamp: int, event: BaseEvent):
+    def _insert_event(self, total_delay: int, event: BaseEvent):
         with self.lock:
-            left, right = 0, len(self.buffer_data) - 1
-            while left < right:
-                mid = (left + right) // 2
-                if self.buffer_data[mid][0] > time_stamp:
-                    right = mid - 1
-                else:
-                    left = mid + 1
-            self.buffer_data.insert(left, (time_stamp, event))
-            self.total_events += 1
-            if self.total_events >= self.configuration.flush_queue_size:
+            if total_delay == 0:
+                self.ready_queue.append(event)
+            else:
+                current_time = utils.current_milliseconds()
+                while self.buffer_data and self.buffer_data[0][0] < current_time:
+                    self.ready_queue.append(self.buffer_data.pop(0)[1])
+                time_stamp = current_time + total_delay
+                left, right = 0, len(self.buffer_data) - 1
+                while left <= right:
+                    mid = (left + right) // 2
+                    if self.buffer_data[mid][0] > time_stamp:
+                        right = mid - 1
+                    else:
+                        left = mid + 1
+                self.buffer_data.insert(left, (time_stamp, event))
+                self.total_events += 1
+            if len(self.ready_queue) >= self.configuration.flush_queue_size:
                 self.lock.notify()
 
     def _get_retry_delay(self, retry: int) -> int:

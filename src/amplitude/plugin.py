@@ -109,10 +109,10 @@ class ContextPlugin(Plugin):
 
     def __init__(self):
         super().__init__(PluginType.BEFORE)
+        self.context_string = f"{constants.SDK_LIBRARY} / {constants.SDK_VERSION}"
 
-    @staticmethod
-    def apply_context_data(event: BaseEvent):
-        event.library = constants.SDK_LIBRARY + '/' + constants.SDK_VERSION
+    def apply_context_data(self, event: BaseEvent):
+        event.library = self.context_string
 
     def execute(self, event: BaseEvent) -> BaseEvent:
         self.apply_context_data(event)
