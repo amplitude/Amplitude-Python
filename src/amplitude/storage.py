@@ -89,13 +89,13 @@ class InMemoryStorage(Storage):
             return result
 
     def _insert_event(self, total_delay: int, event: BaseEvent):
+        current_time = utils.current_milliseconds()
         with self.lock:
+            while self.buffer_data and self.buffer_data[0][0] <= current_time:
+                self.ready_queue.append(self.buffer_data.pop(0)[1])
             if total_delay == 0:
                 self.ready_queue.append(event)
             else:
-                current_time = utils.current_milliseconds()
-                while self.buffer_data and self.buffer_data[0][0] < current_time:
-                    self.ready_queue.append(self.buffer_data.pop(0)[1])
                 time_stamp = current_time + total_delay
                 left, right = 0, len(self.buffer_data) - 1
                 while left <= right:
@@ -105,7 +105,7 @@ class InMemoryStorage(Storage):
                     else:
                         left = mid + 1
                 self.buffer_data.insert(left, (time_stamp, event))
-                self.total_events += 1
+            self.total_events += 1
             if len(self.ready_queue) >= self.configuration.flush_queue_size:
                 self.lock.notify()
 
