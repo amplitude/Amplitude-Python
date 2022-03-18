@@ -14,8 +14,11 @@ class ResponseProcessor:
         elif res.status == HttpStatus.TIMEOUT or res.status == HttpStatus.FAILED:
             self.push_to_storage(events, 0, res)
         elif res.status == HttpStatus.PAYLOAD_TOO_LARGE:
-            self.configuration.flush_queue_size //= 2
-            self.push_to_storage(events, 0, res)
+            if len(events) == 1:
+                self.callback(events, res.code, res.error)
+            else:
+                self.configuration.increase_flush_divider()
+                self.push_to_storage(events, 0, res)
         elif res.status == HttpStatus.INVALID_REQUEST:
             if res.error.startswith("Invalid API key:"):
                 raise InvalidAPIKeyError(f"Invalid API key: {self.configuration.api_key}")
@@ -30,7 +33,7 @@ class ResponseProcessor:
                         events_for_callback.append(event)
                     else:
                         events_for_retry.append(event)
-                self.callback(events_for_callback, res.code, "Invalid or silenced events")
+                self.callback(events_for_callback, res.code, res.error)
                 self.push_to_storage(events_for_retry, 0, res)
         elif res.status == HttpStatus.TOO_MANY_REQUESTS:
             events_for_callback = []
@@ -63,5 +66,5 @@ class ResponseProcessor:
                 if callable(self.configuration.callback):
                     self.configuration.callback(event, code, message)
                 event.callback(code, message)
-            except:
+            except Exception:
                 self.configuration.logger.error(f"Error callback for event {event}")

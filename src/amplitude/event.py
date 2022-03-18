@@ -1,8 +1,10 @@
 import json
 import logging
+import uuid
 from typing import Callable, Optional, Union
 
 from amplitude import constants
+from amplitude import utils
 
 PLAN_KEY_MAPPING = {
     "branch": ["branch", str],
@@ -78,7 +80,7 @@ class EventOptions:
 
     def __init__(self, user_id: Optional[str] = None,
                  device_id: Optional[str] = None,
-                 time: Optional[int] = None,
+                 time: Optional[int] = utils.current_milliseconds(),
                  app_version: Optional[str] = None,
                  platform: Optional[str] = None,
                  os_name: Optional[str] = None,
@@ -106,7 +108,7 @@ class EventOptions:
                  android_id: Optional[str] = None,
                  event_id: Optional[int] = None,
                  session_id: Optional[int] = None,
-                 insert_id: Optional[str] = None,
+                 insert_id: Optional[str] = str(uuid.uuid4()),
                  plan: Optional[Plan] = None,
                  callback=None):
         self.user_id: Optional[str] = None
@@ -201,7 +203,7 @@ class EventOptions:
                 event_body[value[0]] = self[key]
         if "plan" in event_body:
             event_body["plan"] = event_body["plan"].get_plan_body()
-        return event_body
+        return utils.truncate(event_body)
 
     def _verify_property(self, key, value) -> bool:
         if value is None:
@@ -236,7 +238,7 @@ class BaseEvent(EventOptions):
     def __init__(self, event_type: str,
                  user_id: Optional[str] = None,
                  device_id: Optional[str] = None,
-                 time: Optional[int] = None,
+                 time: Optional[int] = utils.current_milliseconds(),
                  event_properties: Optional[dict] = None,
                  user_properties: Optional[dict] = None,
                  groups: Optional[dict] = None,
@@ -268,7 +270,7 @@ class BaseEvent(EventOptions):
                  android_id: Optional[str] = None,
                  event_id: Optional[int] = None,
                  session_id: Optional[int] = None,
-                 insert_id: Optional[str] = None,
+                 insert_id: Optional[str] = str(uuid.uuid4()),
                  plan: Optional[Plan] = None,
                  callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None):
         super().__init__(user_id,
@@ -319,7 +321,7 @@ class GroupIdentifyEvent(BaseEvent):
 
     def __init__(self, user_id: Optional[str] = None,
                  device_id: Optional[str] = None,
-                 time: Optional[int] = None,
+                 time: Optional[int] = utils.current_milliseconds(),
                  event_properties: Optional[dict] = None,
                  user_properties: Optional[dict] = None,
                  groups: Optional[dict] = None,
@@ -351,7 +353,7 @@ class GroupIdentifyEvent(BaseEvent):
                  android_id: Optional[str] = None,
                  event_id: Optional[int] = None,
                  session_id: Optional[int] = None,
-                 insert_id: Optional[str] = None,
+                 insert_id: Optional[str] = str(uuid.uuid4()),
                  plan: Optional[Plan] = None,
                  callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None):
         super().__init__(constants.GROUP_IDENTIFY_EVENT, user_id,
@@ -397,7 +399,7 @@ class IdentifyEvent(BaseEvent):
 
     def __init__(self, user_id: Optional[str] = None,
                  device_id: Optional[str] = None,
-                 time: Optional[int] = None,
+                 time: Optional[int] = utils.current_milliseconds(),
                  event_properties: Optional[dict] = None,
                  user_properties: Optional[dict] = None,
                  groups: Optional[dict] = None,
@@ -429,7 +431,7 @@ class IdentifyEvent(BaseEvent):
                  android_id: Optional[str] = None,
                  event_id: Optional[int] = None,
                  session_id: Optional[int] = None,
-                 insert_id: Optional[str] = None,
+                 insert_id: Optional[str] = str(uuid.uuid4()),
                  plan: Optional[Plan] = None,
                  callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None):
         super().__init__(constants.IDENTIFY_EVENT, user_id,
@@ -475,7 +477,7 @@ class RevenueEvent(BaseEvent):
 
     def __init__(self, user_id: Optional[str] = None,
                  device_id: Optional[str] = None,
-                 time: Optional[int] = None,
+                 time: Optional[int] = utils.current_milliseconds(),
                  event_properties: Optional[dict] = None,
                  user_properties: Optional[dict] = None,
                  groups: Optional[dict] = None,
@@ -507,7 +509,7 @@ class RevenueEvent(BaseEvent):
                  android_id: Optional[str] = None,
                  event_id: Optional[int] = None,
                  session_id: Optional[int] = None,
-                 insert_id: Optional[str] = None,
+                 insert_id: Optional[str] = str(uuid.uuid4()),
                  plan: Optional[Plan] = None,
                  callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None):
         super().__init__(constants.AMP_REVENUE_EVENT, user_id,

@@ -1,14 +1,29 @@
+import logging
 import time
-from amplitude.event import BaseEvent
 
+from amplitude import constants
 
-def verify_event(event):
-    if (not isinstance(event, BaseEvent)) or \
-            (not event["event_type"]) or \
-            (not event["user_id"] and not event["device_id"]):
-        return False
-    return True
+logger = logging.getLogger(__name__)
 
 
 def current_milliseconds() -> int:
     return int(time.time() * 1000)
+
+
+def truncate(obj):
+    if isinstance(obj, dict):
+        if not obj:
+            return {}
+        if len(obj) > constants.MAX_PROPERTY_KEYS:
+            logger.error(f"Too many properties: {obj}")
+            return {}
+        for key, value in obj.items():
+            obj[key] = truncate(value)
+    elif isinstance(obj, list):
+        if not obj:
+            return []
+        for i, element in enumerate(obj):
+            obj[i] = truncate(element)
+    elif isinstance(obj, str):
+        obj = obj[:constants.MAX_STRING_LENGTH]
+    return obj

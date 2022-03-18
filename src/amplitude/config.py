@@ -8,19 +8,30 @@ from amplitude.storage import InMemoryStorageProvider, StorageProvider, Storage
 
 class Config:
 
-    def __init__(self):
-        self.api_key = None
-        self.storage_provider: StorageProvider = InMemoryStorageProvider()
-        self.flush_queue_size: int = constants.FLUSH_SIZE
-        self.flush_interval_millis: int = constants.FLUSH_INTERVAL_MILLIS
-        self.flush_max_retries = 12
-        self.logger = logging.getLogger(__name__)
-        self.min_id_length: Optional[int] = None
-        self.callback: Optional[Callable[[BaseEvent, int, Optional[str]], None]] = None
-        self.server_zone: str = "US"
-        self.use_batch: bool = False
+    def __init__(self, api_key: str = None,
+                 flush_queue_size: int = constants.FLUSH_QUEUE_SIZE,
+                 flush_interval_millis: int = constants.FLUSH_INTERVAL_MILLIS,
+                 flush_max_retries: int = constants.FLUSH_MAX_RETRIES,
+                 logger=logging.getLogger(__name__),
+                 min_id_length: Optional[int] = None,
+                 callback: Optional[Callable[[BaseEvent, int, Optional[str]], None]] = None,
+                 server_zone: str = "US",
+                 use_batch: bool = False,
+                 server_url: Optional[str] = None,
+                 storage_provider: StorageProvider = InMemoryStorageProvider()):
+        self.api_key = api_key
+        self._flush_queue_size: int = flush_queue_size
+        self._flush_size_divider: int = 1
+        self.flush_interval_millis: int = flush_interval_millis
+        self.flush_max_retries = flush_max_retries
+        self.logger = logger
+        self.min_id_length: Optional[int] = min_id_length
+        self.callback: Optional[Callable[[BaseEvent, int, Optional[str]], None]] = callback
+        self.server_zone: str = server_zone
+        self.use_batch: bool = use_batch
+        self._url: Optional[str] = server_url
+        self.storage_provider: StorageProvider = storage_provider
         self.opt_out = False
-        self._url: Optional[str] = None
 
     def get_storage(self) -> Storage:
         return self.storage_provider.get_storage()
@@ -36,6 +47,21 @@ class Config:
                 (isinstance(self.min_id_length, int) and self.min_id_length > 0):
             return True
         return False
+
+    def increase_flush_divider(self):
+        self._flush_size_divider += 1
+
+    def reset_flush_divider(self):
+        self._flush_size_divider = 1
+
+    @property
+    def flush_queue_size(self):
+        return max(1, self._flush_queue_size // self._flush_size_divider)
+
+    @flush_queue_size.setter
+    def flush_queue_size(self, size: int):
+        self._flush_queue_size = size
+        self._flush_size_divider = 1
 
     @property
     def server_url(self):
@@ -53,7 +79,7 @@ class Config:
                 return constants.HTTP_API_URL
 
     @server_url.setter
-    def server_url(self, url):
+    def server_url(self, url: str):
         self._url = url
 
     @property

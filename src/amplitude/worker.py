@@ -36,15 +36,19 @@ class Workers:
 
     def send(self, events):
         url = self.configuration.server_url
-        payload = self.get_payload([event.get_event_body() for event in events])
+        payload = self.get_payload(events)
         res = HttpClient.post(url, payload)
         self.response_processor.process_response(res, events)
 
     def get_payload(self, events) -> bytes:
         payload_body = {
             "api_key": self.configuration.api_key,
-            "events": events
+            "events": []
         }
+        for event in events:
+            event_body = event.get_event_body()
+            if event_body:
+                payload_body["events"].append(event_body)
         if self.configuration.options:
             payload_body["options"] = self.configuration.options
         return json.dumps(payload_body).encode('utf8')

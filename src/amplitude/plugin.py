@@ -5,7 +5,6 @@ from typing import Optional
 from amplitude.event import BaseEvent, GroupIdentifyEvent, IdentifyEvent, RevenueEvent
 from amplitude import constants
 from amplitude.timeline import Timeline
-from amplitude import utils
 from amplitude.exception import InvalidEventError
 from amplitude.worker import Workers
 
@@ -97,7 +96,7 @@ class AmplitudeDestinationPlugin(DestinationPlugin):
 
     def execute(self, event: BaseEvent) -> None:
         event = self.__timeline.process(event)
-        if not utils.verify_event(event):
+        if not verify_event(event):
             raise InvalidEventError("Invalid event.")
         self.storage.push(event)
 
@@ -117,3 +116,11 @@ class ContextPlugin(Plugin):
     def execute(self, event: BaseEvent) -> BaseEvent:
         self.apply_context_data(event)
         return event
+
+
+def verify_event(event):
+    if (not isinstance(event, BaseEvent)) or \
+            (not event["event_type"]) or \
+            (not event["user_id"] and not event["device_id"]):
+        return False
+    return True

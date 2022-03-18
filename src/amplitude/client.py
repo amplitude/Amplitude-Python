@@ -14,7 +14,7 @@ class Amplitude:
         self.__timeline = Timeline()
         self.__timeline.setup(self)
         self.add(AmplitudeDestinationPlugin())
-        self.add(ContextPlugin)
+        self.add(ContextPlugin())
 
     def track(self, event: BaseEvent):
         self.__timeline.process(event)
