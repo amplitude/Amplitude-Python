@@ -219,10 +219,7 @@ class EventOptions:
 
     def callback(self, status_code: int, message=None) -> None:
         if callable(self.event_callback):
-            try:
-                self.event_callback(self, status_code, message)
-            except Exception:
-                logger.error(f"Event callback error for event {self}")
+            self.event_callback(self, status_code, message)
 
     @property
     def retry(self):

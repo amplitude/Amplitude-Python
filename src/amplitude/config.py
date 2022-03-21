@@ -15,7 +15,7 @@ class Config:
                  logger=logging.getLogger(__name__),
                  min_id_length: Optional[int] = None,
                  callback: Optional[Callable[[BaseEvent, int, Optional[str]], None]] = None,
-                 server_zone: str = "US",
+                 server_zone: str = constants.DEFAULT_ZONE,
                  use_batch: bool = False,
                  server_url: Optional[str] = None,
                  storage_provider: StorageProvider = InMemoryStorageProvider()):
@@ -67,16 +67,7 @@ class Config:
     def server_url(self):
         if self._url:
             return self._url
-        if self.server_zone == constants.EU_ZONE:
-            if self.use_batch:
-                return constants.BATCH_API_URL_EU
-            else:
-                return constants.BATCH_API_URL
-        else:
-            if self.use_batch:
-                return constants.HTTP_API_URL_EU
-            else:
-                return constants.HTTP_API_URL
+        return constants.SERVER_URL[self.server_zone][self.use_batch]
 
     @server_url.setter
     def server_url(self, url: str):

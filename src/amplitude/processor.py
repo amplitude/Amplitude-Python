@@ -10,7 +10,7 @@ class ResponseProcessor:
 
     def process_response(self, res, events):
         if res.status == HttpStatus.SUCCESS:
-            self.callback(events, res.code, "Event sent successful.")
+            self.callback(events, res.code, "Event sent successfully.")
         elif res.status == HttpStatus.TIMEOUT or res.status == HttpStatus.FAILED:
             self.push_to_storage(events, 0, res)
         elif res.status == HttpStatus.PAYLOAD_TOO_LARGE:
@@ -21,7 +21,7 @@ class ResponseProcessor:
                 self.push_to_storage(events, 0, res)
         elif res.status == HttpStatus.INVALID_REQUEST:
             if res.error.startswith("Invalid API key:"):
-                raise InvalidAPIKeyError(f"Invalid API key: {self.configuration.api_key}")
+                raise InvalidAPIKeyError(res.error)
             if res.missing_field:
                 self.callback(events, res.code, f"Request missing required field {res.missing_field}")
             else:

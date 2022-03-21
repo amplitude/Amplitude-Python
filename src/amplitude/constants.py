@@ -4,10 +4,17 @@ SDK_LIBRARY = "amplitude-python"
 SDK_VERSION = "0.0.1"
 
 EU_ZONE = "EU"
-HTTP_API_URL: Final = "https://api2.amplitude.com/2/httpapi"
-HTTP_API_URL_EU: Final = "https://api.eu.amplitude.com/2/httpapi"
-BATCH_API_URL: Final = "https://api2.amplitude.com/batch"
-BATCH_API_URL_EU: Final = "https://api.eu.amplitude.com/batch"
+DEFAULT_ZONE = "US"
+SERVER_URL = {
+    EU_ZONE: {
+        True: "https://api.eu.amplitude.com/batch",
+        False: "https://api.eu.amplitude.com/2/httpapi"
+    },
+    DEFAULT_ZONE: {
+        True: "https://api2.amplitude.com/batch",
+        False: "https://api2.amplitude.com/2/httpapi"
+    }
+}
 
 IDENTIFY_EVENT = "$identify"
 GROUP_IDENTIFY_EVENT = "$groupidentify"
