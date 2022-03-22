@@ -1,4 +1,5 @@
 import abc
+import uuid
 from enum import Enum
 from typing import Optional
 
@@ -6,6 +7,7 @@ from amplitude.event import BaseEvent, GroupIdentifyEvent, IdentifyEvent, Revenu
 from amplitude import constants
 from amplitude.timeline import Timeline
 from amplitude.exception import InvalidEventError
+from amplitude import utils
 from amplitude.worker import Workers
 
 
@@ -114,6 +116,10 @@ class ContextPlugin(Plugin):
         event.library = self.context_string
 
     def execute(self, event: BaseEvent) -> BaseEvent:
+        if not event.time:
+            event.time = utils.current_milliseconds()
+        if not event.insert_id:
+            event.insert_id = str(uuid.uuid4())
         self.apply_context_data(event)
         return event
 
