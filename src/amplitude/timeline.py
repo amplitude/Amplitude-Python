@@ -46,6 +46,9 @@ class Timeline:
                 self.logger.error(f"Error for flush events")
 
     def process(self, event):
+        if self.configuration.opt_out:
+            self.logger.info(f"Skipped {event} for opt out config")
+            return event
         before_result = self.apply_plugins(PluginType.BEFORE, event)
         enrich_result = self.apply_plugins(PluginType.ENRICHMENT, before_result)
         self.apply_plugins(PluginType.DESTINATION, enrich_result)
