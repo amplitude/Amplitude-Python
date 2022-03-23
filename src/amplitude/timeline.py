@@ -47,7 +47,7 @@ class Timeline:
 
     def process(self, event):
         if self.configuration.opt_out:
-            self.logger.info(f"Skipped {event} for opt out config")
+            self.logger.info("Skipped event for opt out config")
             return event
         before_result = self.apply_plugins(PluginType.BEFORE, event)
         enrich_result = self.apply_plugins(PluginType.ENRICHMENT, before_result)
