@@ -71,7 +71,8 @@ EVENT_KEY_MAPPING = {
     "insert_id": ["insert_id", str],
     "library": ["library", str],
     "plan": ["plan", Plan],
-    "group_properties": ["group_properties", dict]
+    "group_properties": ["group_properties", dict],
+    "partner_id": ["partner_id", str]
 }
 
 
@@ -109,6 +110,7 @@ class EventOptions:
                  session_id: Optional[int] = None,
                  insert_id: Optional[str] = None,
                  plan: Optional[Plan] = None,
+                 partner_id: Optional[str] = None,
                  callback=None):
         self.user_id: Optional[str] = None
         self.device_id: Optional[str] = None
@@ -143,6 +145,7 @@ class EventOptions:
         self.insert_id: Optional[str] = None
         self.library: Optional[str] = None
         self.plan: Optional[Plan] = None
+        self.partner_id: Optional[str] = None
         self["user_id"] = user_id
         self["device_id"] = device_id
         self["time"] = time
@@ -175,6 +178,7 @@ class EventOptions:
         self["session_id"] = session_id
         self["insert_id"] = insert_id
         self["plan"] = plan
+        self["partner_id"] = partner_id
         self.event_callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = callback
         self.__retry: int = 0
 
@@ -268,6 +272,7 @@ class BaseEvent(EventOptions):
                  session_id: Optional[int] = None,
                  insert_id: Optional[str] = None,
                  plan: Optional[Plan] = None,
+                 partner_id: Optional[str] = None,
                  callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None):
         super().__init__(user_id,
                          device_id,
@@ -301,6 +306,7 @@ class BaseEvent(EventOptions):
                          session_id,
                          insert_id,
                          plan,
+                         partner_id,
                          callback)
         self.event_type: str = event_type
         self.event_properties: Optional[dict] = None
@@ -430,6 +436,7 @@ class GroupIdentifyEvent(BaseEvent):
                  session_id: Optional[int] = None,
                  insert_id: Optional[str] = None,
                  plan: Optional[Plan] = None,
+                 partner_id: Optional[str] = None,
                  callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None,
                  identify_obj: Optional[Identify] = None):
         super().__init__(constants.GROUP_IDENTIFY_EVENT, user_id,
@@ -468,6 +475,7 @@ class GroupIdentifyEvent(BaseEvent):
                          session_id,
                          insert_id,
                          plan,
+                         partner_id,
                          callback)
         if identify_obj:
             self.group_properties = identify_obj.user_properties
@@ -511,6 +519,7 @@ class IdentifyEvent(BaseEvent):
                  session_id: Optional[int] = None,
                  insert_id: Optional[str] = None,
                  plan: Optional[Plan] = None,
+                 partner_id: Optional[str] = None,
                  callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None,
                  identify_obj: Optional[Identify] = None):
         super().__init__(constants.IDENTIFY_EVENT, user_id,
@@ -549,6 +558,7 @@ class IdentifyEvent(BaseEvent):
                          session_id,
                          insert_id,
                          plan,
+                         partner_id,
                          callback)
         if identify_obj:
             self.user_properties = identify_obj.user_properties
@@ -636,6 +646,7 @@ class RevenueEvent(BaseEvent):
                  session_id: Optional[int] = None,
                  insert_id: Optional[str] = None,
                  plan: Optional[Plan] = None,
+                 partner_id: Optional[str] = None,
                  callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None,
                  revenue_obj: Optional[Revenue] = None):
         super().__init__(constants.AMP_REVENUE_EVENT, user_id,
@@ -674,6 +685,7 @@ class RevenueEvent(BaseEvent):
                          session_id,
                          insert_id,
                          plan,
+                         partner_id,
                          callback)
         if revenue_obj:
             if not self.event_properties:
