@@ -5,14 +5,16 @@ SDK_VERSION = "0.0.1"
 
 EU_ZONE = "EU"
 DEFAULT_ZONE = "US"
+BATCH = 'batch'
+HTTP_V2 = 'v2'
 SERVER_URL = {
     EU_ZONE: {
-        True: "https://api.eu.amplitude.com/batch",
-        False: "https://api.eu.amplitude.com/2/httpapi"
+        BATCH: "https://api.eu.amplitude.com/batch",
+        HTTP_V2: "https://api.eu.amplitude.com/2/httpapi"
     },
     DEFAULT_ZONE: {
-        True: "https://api2.amplitude.com/batch",
-        False: "https://api2.amplitude.com/2/httpapi"
+        BATCH: "https://api2.amplitude.com/batch",
+        HTTP_V2: "https://api2.amplitude.com/2/httpapi"
     }
 }
 

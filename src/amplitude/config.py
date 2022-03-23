@@ -67,7 +67,7 @@ class Config:
     def server_url(self):
         if self._url:
             return self._url
-        return constants.SERVER_URL[self.server_zone][self.use_batch]
+        return constants.SERVER_URL[self.server_zone][constants.BATCH if self.use_batch else constants.HTTP_V2]
 
     @server_url.setter
     def server_url(self, url: str):
