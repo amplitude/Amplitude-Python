@@ -1,5 +1,3 @@
-from typing import Final
-
 SDK_LIBRARY = "amplitude-python"
 SDK_VERSION = "0.0.1"
 
