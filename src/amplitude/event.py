@@ -3,13 +3,14 @@ import logging
 from typing import Callable, Optional, Union
 
 from amplitude import constants
+from amplitude import utils
 
 PLAN_KEY_MAPPING = {
     "branch": ["branch", str],
     "source": ["source", str],
     "version": ["version", str]
 }
-logger = logging.getLogger(constants.LOGGER_NAME)
+logger = logging.getLogger(__name__)
 
 
 class Plan:
@@ -19,7 +20,7 @@ class Plan:
         self.source: Optional[str] = source
         self.version: Optional[str] = version
 
-    def get_plan_body(self) -> dict[str: str]:
+    def get_plan_body(self):
         result = {}
         for key in PLAN_KEY_MAPPING:
             if not self.__dict__[key]:
@@ -68,6 +69,7 @@ EVENT_KEY_MAPPING = {
     "event_id": ["event_id", int],
     "session_id": ["session_id", int],
     "insert_id": ["insert_id", str],
+    "library": ["library", str],
     "plan": ["plan", Plan],
     "group_properties": ["group_properties", dict]
 }
@@ -139,6 +141,7 @@ class EventOptions:
         self.event_id: Optional[int] = None
         self.session_id: Optional[int] = None
         self.insert_id: Optional[str] = None
+        self.library: Optional[str] = None
         self.plan: Optional[Plan] = None
         self["user_id"] = user_id
         self["device_id"] = device_id
@@ -173,6 +176,7 @@ class EventOptions:
         self["insert_id"] = insert_id
         self["plan"] = plan
         self.event_callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = callback
+        self.__retry: int = 0
 
     def __getitem__(self, item: str):
         if item in self.__dict__:
@@ -198,7 +202,7 @@ class EventOptions:
                 event_body[value[0]] = self[key]
         if "plan" in event_body:
             event_body["plan"] = event_body["plan"].get_plan_body()
-        return event_body
+        return utils.truncate(event_body)
 
     def _verify_property(self, key, value) -> bool:
         if value is None:
@@ -215,6 +219,14 @@ class EventOptions:
     def callback(self, status_code: int, message=None) -> None:
         if callable(self.event_callback):
             self.event_callback(self, status_code, message)
+
+    @property
+    def retry(self):
+        return self.__retry
+
+    @retry.setter
+    def retry(self, n: int):
+        self.__retry = n
 
 
 class BaseEvent(EventOptions):
@@ -300,240 +312,12 @@ class BaseEvent(EventOptions):
         self["groups"] = groups
         self["group_properties"] = group_properties
 
-
-class GroupIdentifyEvent(BaseEvent):
-
-    def __init__(self, user_id: Optional[str] = None,
-                 device_id: Optional[str] = None,
-                 time: Optional[int] = None,
-                 event_properties: Optional[dict] = None,
-                 user_properties: Optional[dict] = None,
-                 groups: Optional[dict] = None,
-                 group_properties: Optional[dict] = None,
-                 app_version: Optional[str] = None,
-                 platform: Optional[str] = None,
-                 os_name: Optional[str] = None,
-                 os_version: Optional[str] = None,
-                 device_brand: Optional[str] = None,
-                 device_manufacturer: Optional[str] = None,
-                 device_model: Optional[str] = None,
-                 carrier: Optional[str] = None,
-                 country: Optional[str] = None,
-                 region: Optional[str] = None,
-                 city: Optional[str] = None,
-                 dma: Optional[str] = None,
-                 language: Optional[str] = None,
-                 price: Optional[float] = None,
-                 quantity: Optional[int] = None,
-                 revenue: Optional[float] = None,
-                 product_id: Optional[str] = None,
-                 revenue_type: Optional[str] = None,
-                 location_lat: Optional[float] = None,
-                 location_lng: Optional[float] = None,
-                 ip: Optional[str] = None,
-                 idfa: Optional[str] = None,
-                 idfv: Optional[str] = None,
-                 adid: Optional[str] = None,
-                 android_id: Optional[str] = None,
-                 event_id: Optional[int] = None,
-                 session_id: Optional[int] = None,
-                 insert_id: Optional[str] = None,
-                 plan: Optional[Plan] = None,
-
-                 callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None):
-        super().__init__(constants.GROUP_IDENTIFY_EVENT, user_id,
-                         device_id,
-                         time,
-                         event_properties,
-                         user_properties,
-                         groups,
-                         group_properties,
-                         app_version,
-                         platform,
-                         os_name,
-                         os_version,
-                         device_brand,
-                         device_manufacturer,
-                         device_model,
-                         carrier,
-                         country,
-                         region,
-                         city,
-                         dma,
-                         language,
-                         price,
-                         quantity,
-                         revenue,
-                         product_id,
-                         revenue_type,
-                         location_lat,
-                         location_lng,
-                         ip,
-                         idfa,
-                         idfv,
-                         adid,
-                         android_id,
-                         event_id,
-                         session_id,
-                         insert_id,
-                         plan,
-                         callback)
-
-
-class IdentifyEvent(BaseEvent):
-
-    def __init__(self, user_id: Optional[str] = None,
-                 device_id: Optional[str] = None,
-                 time: Optional[int] = None,
-                 event_properties: Optional[dict] = None,
-                 user_properties: Optional[dict] = None,
-                 groups: Optional[dict] = None,
-                 group_properties: Optional[dict] = None,
-                 app_version: Optional[str] = None,
-                 platform: Optional[str] = None,
-                 os_name: Optional[str] = None,
-                 os_version: Optional[str] = None,
-                 device_brand: Optional[str] = None,
-                 device_manufacturer: Optional[str] = None,
-                 device_model: Optional[str] = None,
-                 carrier: Optional[str] = None,
-                 country: Optional[str] = None,
-                 region: Optional[str] = None,
-                 city: Optional[str] = None,
-                 dma: Optional[str] = None,
-                 language: Optional[str] = None,
-                 price: Optional[float] = None,
-                 quantity: Optional[int] = None,
-                 revenue: Optional[float] = None,
-                 product_id: Optional[str] = None,
-                 revenue_type: Optional[str] = None,
-                 location_lat: Optional[float] = None,
-                 location_lng: Optional[float] = None,
-                 ip: Optional[str] = None,
-                 idfa: Optional[str] = None,
-                 idfv: Optional[str] = None,
-                 adid: Optional[str] = None,
-                 android_id: Optional[str] = None,
-                 event_id: Optional[int] = None,
-                 session_id: Optional[int] = None,
-                 insert_id: Optional[str] = None,
-                 plan: Optional[Plan] = None,
-                 callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None):
-        super().__init__(constants.IDENTIFY_EVENT, user_id,
-                         device_id,
-                         time,
-                         event_properties,
-                         user_properties,
-                         groups,
-                         group_properties,
-                         app_version,
-                         platform,
-                         os_name,
-                         os_version,
-                         device_brand,
-                         device_manufacturer,
-                         device_model,
-                         carrier,
-                         country,
-                         region,
-                         city,
-                         dma,
-                         language,
-                         price,
-                         quantity,
-                         revenue,
-                         product_id,
-                         revenue_type,
-                         location_lat,
-                         location_lng,
-                         ip,
-                         idfa,
-                         idfv,
-                         adid,
-                         android_id,
-                         event_id,
-                         session_id,
-                         insert_id,
-                         plan,
-                         callback)
-
-
-class RevenueEvent(BaseEvent):
-
-    def __init__(self, user_id: Optional[str] = None,
-                 device_id: Optional[str] = None,
-                 time: Optional[int] = None,
-                 event_properties: Optional[dict] = None,
-                 user_properties: Optional[dict] = None,
-                 groups: Optional[dict] = None,
-                 group_properties: Optional[dict] = None,
-                 app_version: Optional[str] = None,
-                 platform: Optional[str] = None,
-                 os_name: Optional[str] = None,
-                 os_version: Optional[str] = None,
-                 device_brand: Optional[str] = None,
-                 device_manufacturer: Optional[str] = None,
-                 device_model: Optional[str] = None,
-                 carrier: Optional[str] = None,
-                 country: Optional[str] = None,
-                 region: Optional[str] = None,
-                 city: Optional[str] = None,
-                 dma: Optional[str] = None,
-                 language: Optional[str] = None,
-                 price: Optional[float] = None,
-                 quantity: Optional[int] = None,
-                 revenue: Optional[float] = None,
-                 product_id: Optional[str] = None,
-                 revenue_type: Optional[str] = None,
-                 location_lat: Optional[float] = None,
-                 location_lng: Optional[float] = None,
-                 ip: Optional[str] = None,
-                 idfa: Optional[str] = None,
-                 idfv: Optional[str] = None,
-                 adid: Optional[str] = None,
-                 android_id: Optional[str] = None,
-                 event_id: Optional[int] = None,
-                 session_id: Optional[int] = None,
-                 insert_id: Optional[str] = None,
-                 plan: Optional[Plan] = None,
-                 callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None):
-        super().__init__(constants.AMP_REVENUE_EVENT, user_id,
-                         device_id,
-                         time,
-                         event_properties,
-                         user_properties,
-                         groups,
-                         group_properties,
-                         app_version,
-                         platform,
-                         os_name,
-                         os_version,
-                         device_brand,
-                         device_manufacturer,
-                         device_model,
-                         carrier,
-                         country,
-                         region,
-                         city,
-                         dma,
-                         language,
-                         price,
-                         quantity,
-                         revenue,
-                         product_id,
-                         revenue_type,
-                         location_lat,
-                         location_lng,
-                         ip,
-                         idfa,
-                         idfv,
-                         adid,
-                         android_id,
-                         event_id,
-                         session_id,
-                         insert_id,
-                         plan,
-                         callback)
+    def load_event_options(self, event_options: EventOptions):
+        if not event_options:
+            return
+        for key in EVENT_KEY_MAPPING:
+            if key in event_options:
+                self[key] = event_options[key]
 
 
 class Identify:
@@ -608,6 +392,168 @@ class Identify:
         return True
 
 
+class GroupIdentifyEvent(BaseEvent):
+
+    def __init__(self, user_id: Optional[str] = None,
+                 device_id: Optional[str] = None,
+                 time: Optional[int] = None,
+                 event_properties: Optional[dict] = None,
+                 user_properties: Optional[dict] = None,
+                 groups: Optional[dict] = None,
+                 group_properties: Optional[dict] = None,
+                 app_version: Optional[str] = None,
+                 platform: Optional[str] = None,
+                 os_name: Optional[str] = None,
+                 os_version: Optional[str] = None,
+                 device_brand: Optional[str] = None,
+                 device_manufacturer: Optional[str] = None,
+                 device_model: Optional[str] = None,
+                 carrier: Optional[str] = None,
+                 country: Optional[str] = None,
+                 region: Optional[str] = None,
+                 city: Optional[str] = None,
+                 dma: Optional[str] = None,
+                 language: Optional[str] = None,
+                 price: Optional[float] = None,
+                 quantity: Optional[int] = None,
+                 revenue: Optional[float] = None,
+                 product_id: Optional[str] = None,
+                 revenue_type: Optional[str] = None,
+                 location_lat: Optional[float] = None,
+                 location_lng: Optional[float] = None,
+                 ip: Optional[str] = None,
+                 idfa: Optional[str] = None,
+                 idfv: Optional[str] = None,
+                 adid: Optional[str] = None,
+                 android_id: Optional[str] = None,
+                 event_id: Optional[int] = None,
+                 session_id: Optional[int] = None,
+                 insert_id: Optional[str] = None,
+                 plan: Optional[Plan] = None,
+                 callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None,
+                 identify_obj: Optional[Identify] = None):
+        super().__init__(constants.GROUP_IDENTIFY_EVENT, user_id,
+                         device_id,
+                         time,
+                         event_properties,
+                         user_properties,
+                         groups,
+                         group_properties,
+                         app_version,
+                         platform,
+                         os_name,
+                         os_version,
+                         device_brand,
+                         device_manufacturer,
+                         device_model,
+                         carrier,
+                         country,
+                         region,
+                         city,
+                         dma,
+                         language,
+                         price,
+                         quantity,
+                         revenue,
+                         product_id,
+                         revenue_type,
+                         location_lat,
+                         location_lng,
+                         ip,
+                         idfa,
+                         idfv,
+                         adid,
+                         android_id,
+                         event_id,
+                         session_id,
+                         insert_id,
+                         plan,
+                         callback)
+        if identify_obj:
+            self.group_properties = identify_obj.user_properties
+
+
+class IdentifyEvent(BaseEvent):
+
+    def __init__(self, user_id: Optional[str] = None,
+                 device_id: Optional[str] = None,
+                 time: Optional[int] = None,
+                 event_properties: Optional[dict] = None,
+                 user_properties: Optional[dict] = None,
+                 groups: Optional[dict] = None,
+                 group_properties: Optional[dict] = None,
+                 app_version: Optional[str] = None,
+                 platform: Optional[str] = None,
+                 os_name: Optional[str] = None,
+                 os_version: Optional[str] = None,
+                 device_brand: Optional[str] = None,
+                 device_manufacturer: Optional[str] = None,
+                 device_model: Optional[str] = None,
+                 carrier: Optional[str] = None,
+                 country: Optional[str] = None,
+                 region: Optional[str] = None,
+                 city: Optional[str] = None,
+                 dma: Optional[str] = None,
+                 language: Optional[str] = None,
+                 price: Optional[float] = None,
+                 quantity: Optional[int] = None,
+                 revenue: Optional[float] = None,
+                 product_id: Optional[str] = None,
+                 revenue_type: Optional[str] = None,
+                 location_lat: Optional[float] = None,
+                 location_lng: Optional[float] = None,
+                 ip: Optional[str] = None,
+                 idfa: Optional[str] = None,
+                 idfv: Optional[str] = None,
+                 adid: Optional[str] = None,
+                 android_id: Optional[str] = None,
+                 event_id: Optional[int] = None,
+                 session_id: Optional[int] = None,
+                 insert_id: Optional[str] = None,
+                 plan: Optional[Plan] = None,
+                 callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None,
+                 identify_obj: Optional[Identify] = None):
+        super().__init__(constants.IDENTIFY_EVENT, user_id,
+                         device_id,
+                         time,
+                         event_properties,
+                         user_properties,
+                         groups,
+                         group_properties,
+                         app_version,
+                         platform,
+                         os_name,
+                         os_version,
+                         device_brand,
+                         device_manufacturer,
+                         device_model,
+                         carrier,
+                         country,
+                         region,
+                         city,
+                         dma,
+                         language,
+                         price,
+                         quantity,
+                         revenue,
+                         product_id,
+                         revenue_type,
+                         location_lat,
+                         location_lng,
+                         ip,
+                         idfa,
+                         idfv,
+                         adid,
+                         android_id,
+                         event_id,
+                         session_id,
+                         insert_id,
+                         plan,
+                         callback)
+        if identify_obj:
+            self.user_properties = identify_obj.user_properties
+
+
 class Revenue:
 
     def __init__(self, price: float,
@@ -635,7 +581,7 @@ class Revenue:
     def is_valid(self):
         return isinstance(self.price, float)
 
-    def to_revenue_event(self) -> RevenueEvent:
+    def to_revenue_event(self):
         return RevenueEvent(event_properties=self.get_event_properties())
 
     def get_event_properties(self):
@@ -650,6 +596,89 @@ class Revenue:
                                  constants.REVENUE_RECEIPT_SIG: self.receipt_sig,
                                  constants.REVENUE: self.revenue})
         return event_properties
+
+
+class RevenueEvent(BaseEvent):
+
+    def __init__(self, user_id: Optional[str] = None,
+                 device_id: Optional[str] = None,
+                 time: Optional[int] = None,
+                 event_properties: Optional[dict] = None,
+                 user_properties: Optional[dict] = None,
+                 groups: Optional[dict] = None,
+                 group_properties: Optional[dict] = None,
+                 app_version: Optional[str] = None,
+                 platform: Optional[str] = None,
+                 os_name: Optional[str] = None,
+                 os_version: Optional[str] = None,
+                 device_brand: Optional[str] = None,
+                 device_manufacturer: Optional[str] = None,
+                 device_model: Optional[str] = None,
+                 carrier: Optional[str] = None,
+                 country: Optional[str] = None,
+                 region: Optional[str] = None,
+                 city: Optional[str] = None,
+                 dma: Optional[str] = None,
+                 language: Optional[str] = None,
+                 price: Optional[float] = None,
+                 quantity: Optional[int] = None,
+                 revenue: Optional[float] = None,
+                 product_id: Optional[str] = None,
+                 revenue_type: Optional[str] = None,
+                 location_lat: Optional[float] = None,
+                 location_lng: Optional[float] = None,
+                 ip: Optional[str] = None,
+                 idfa: Optional[str] = None,
+                 idfv: Optional[str] = None,
+                 adid: Optional[str] = None,
+                 android_id: Optional[str] = None,
+                 event_id: Optional[int] = None,
+                 session_id: Optional[int] = None,
+                 insert_id: Optional[str] = None,
+                 plan: Optional[Plan] = None,
+                 callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None,
+                 revenue_obj: Optional[Revenue] = None):
+        super().__init__(constants.AMP_REVENUE_EVENT, user_id,
+                         device_id,
+                         time,
+                         event_properties,
+                         user_properties,
+                         groups,
+                         group_properties,
+                         app_version,
+                         platform,
+                         os_name,
+                         os_version,
+                         device_brand,
+                         device_manufacturer,
+                         device_model,
+                         carrier,
+                         country,
+                         region,
+                         city,
+                         dma,
+                         language,
+                         price,
+                         quantity,
+                         revenue,
+                         product_id,
+                         revenue_type,
+                         location_lat,
+                         location_lng,
+                         ip,
+                         idfa,
+                         idfv,
+                         adid,
+                         android_id,
+                         event_id,
+                         session_id,
+                         insert_id,
+                         plan,
+                         callback)
+        if revenue_obj:
+            if not self.event_properties:
+                self.event_properties = {}
+            self.event_properties.update(revenue_obj.get_event_properties())
 
 
 def is_validate_properties(key, value):

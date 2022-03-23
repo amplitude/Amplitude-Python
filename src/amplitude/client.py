@@ -1,58 +1,62 @@
-from amplitude import config
-from amplitude.event import Revenue, BaseEvent, Identify, IdentifyEvent, GroupIdentifyEvent
+from typing import Optional, Callable
+
+from amplitude.config import Config
+from amplitude.event import Revenue, BaseEvent, Identify, IdentifyEvent, GroupIdentifyEvent, Plan, EventOptions
+from amplitude.plugin import AmplitudeDestinationPlugin, ContextPlugin
 from amplitude.timeline import Timeline
-from amplitude import worker
 
 
 class Amplitude:
 
-    def __init__(self, api_key, configuration=config.DEFAULT_CONFIG):
+    def __init__(self, api_key: Optional[str] = None, configuration=Config()):
         self.configuration = configuration
+        self.configuration.api_key = api_key
         self.__timeline = Timeline()
-        self.api_key = api_key
-        self.__workers = worker.create_workers_pool()
-        self.options = None
-
-    @property
-    def timeline(self):
-        return self.__timeline
-
-    @property
-    def workers(self):
-        return self.__workers
+        self.__timeline.setup(self)
+        self.add(AmplitudeDestinationPlugin())
+        self.add(ContextPlugin())
 
     def track(self, event: BaseEvent):
-        self.timeline.process(event)
+        self.__timeline.process(event)
 
-    def identify(self, user_id: str, identify_obj: Identify):
-        if identify_obj.is_valid():
-            event = IdentifyEvent(user_id)
-            event.user_properties = identify_obj.user_properties
-            self.track(event)
-        else:
+    def identify(self, identify_obj: Identify, event_properties: Optional[dict] = None,
+                 event_options: Optional[EventOptions] = None):
+        if not identify_obj.is_valid():
             self.configuration.logger.error("Empty identify properties")
-
-    def group_identify(self, user_id: str, group_type: str, group_name: str, identify_obj: Identify):
-        if identify_obj.is_valid():
-            event = GroupIdentifyEvent(user_id=user_id, groups={group_type: group_name})
-            event.group_properties = identify_obj.user_properties
-            self.track(event)
         else:
-            self.configuration.logger.error("Empty group identify properties")
+            event = IdentifyEvent(event_properties=event_properties,
+                                  user_properties=identify_obj.user_properties)
+            event.load_event_options(event_options)
+            self.track(event)
 
-    def revenue(self, revenue_obj: Revenue):
+    def group_identify(self, group_type: str, group_name: str, identify_obj: Identify, event_properties=None,
+                       user_properties=None, event_options: Optional[EventOptions] = None):
+        if not identify_obj.is_valid():
+            self.configuration.logger.error("Empty group identify properties")
+        else:
+            event = GroupIdentifyEvent(event_properties=event_properties,
+                                       user_properties=user_properties,
+                                       groups={group_type: group_name},
+                                       group_properties=identify_obj.user_properties)
+            event.load_event_options(event_options)
+            self.track(event)
+
+    def revenue(self, revenue_obj: Revenue, event_options: Optional[EventOptions] = None):
         if not revenue_obj.is_valid():
             self.configuration.logger.error("Missing price for revenue event")
         else:
-            self.track(revenue_obj.to_revenue_event())
+            event = revenue_obj.to_revenue_event()
+            event.load_event_options(event_options)
+            self.track(event)
 
     def flush(self):
-        pass
+        self.__timeline.flush()
 
     def add(self, plugin):
-        self.timeline.add(plugin)
+        self.__timeline.add(plugin)
+        plugin.setup(self)
         return self
 
     def remove(self, plugin):
-        self.timeline.remove(plugin)
+        self.__timeline.remove(plugin)
         return self

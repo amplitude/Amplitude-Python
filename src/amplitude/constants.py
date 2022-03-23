@@ -1,7 +1,20 @@
-HTTP_API_URL = "https://api2.amplitude.com/2/httpapi"
-HTTP_API_URL_EU = "https://api.eu.amplitude.com/2/httpapi"
-BATCH_API_URL = "https://api2.amplitude.com/batch"
-BATCH_API_URL_EU = "https://api.eu.amplitude.com/batch"
+SDK_LIBRARY = "amplitude-python"
+SDK_VERSION = "0.0.1"
+
+EU_ZONE = "EU"
+DEFAULT_ZONE = "US"
+BATCH = 'batch'
+HTTP_V2 = 'v2'
+SERVER_URL = {
+    EU_ZONE: {
+        BATCH: "https://api.eu.amplitude.com/batch",
+        HTTP_V2: "https://api.eu.amplitude.com/2/httpapi"
+    },
+    DEFAULT_ZONE: {
+        BATCH: "https://api2.amplitude.com/batch",
+        HTTP_V2: "https://api2.amplitude.com/2/httpapi"
+    }
+}
 
 IDENTIFY_EVENT = "$identify"
 GROUP_IDENTIFY_EVENT = "$groupidentify"
@@ -28,5 +41,8 @@ AMP_REVENUE_EVENT = "revenue_amount"
 
 MAX_PROPERTY_KEYS = 1024
 MAX_STRING_LENGTH = 1024
-
-LOGGER_NAME = "amplitude"
+FLUSH_QUEUE_SIZE = 200
+FLUSH_INTERVAL_MILLIS = 10000
+FLUSH_MAX_RETRIES = 12
+CONNECTION_TIMEOUT = 10.0  # seconds float
+MAX_BUFFER_CAPACITY = 20000
