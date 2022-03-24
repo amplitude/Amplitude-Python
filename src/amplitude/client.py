@@ -1,7 +1,7 @@
-from typing import Optional, Callable
+from typing import Optional
 
 from amplitude.config import Config
-from amplitude.event import Revenue, BaseEvent, Identify, IdentifyEvent, GroupIdentifyEvent, Plan, EventOptions
+from amplitude.event import Revenue, BaseEvent, Identify, IdentifyEvent, GroupIdentifyEvent, EventOptions
 from amplitude.plugin import AmplitudeDestinationPlugin, ContextPlugin
 from amplitude.timeline import Timeline
 
