@@ -8,7 +8,7 @@ from typing import Optional
 
 from amplitude.config import Config
 from amplitude.event import Revenue, BaseEvent, Identify, IdentifyEvent, GroupIdentifyEvent, EventOptions
-from amplitude.plugin import AmplitudeDestinationPlugin, ContextPlugin
+from amplitude.plugin import AmplitudeDestinationPlugin, ContextPlugin, Plugin
 from amplitude.timeline import Timeline
 
 
@@ -122,7 +122,7 @@ class Amplitude:
         """Flush all event waiting to be sent in the buffer"""
         self.__timeline.flush()
 
-    def add(self, plugin):
+    def add(self, plugin: Plugin):
         """Add the plugin object to client instance. Events tracked by this client instance will be
             processed by instance's plugins.
 
@@ -136,7 +136,7 @@ class Amplitude:
         plugin.setup(self)
         return self
 
-    def remove(self, plugin):
+    def remove(self, plugin: Plugin):
         """Remove the plugin object from client instance
 
         Args:
