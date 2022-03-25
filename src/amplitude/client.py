@@ -16,8 +16,7 @@ class Amplitude:
     """Amplitude client used to store configurations and track events
 
     Args:
-        api_key (str, optional): The api key of amplitude project. Defaults to None.
-            Must be set properly before tracking events.
+        api_key (str): The api key of amplitude project. Must be set properly before tracking events.
         configuration (amplitude.config.Config, optional): The configuration of client instance. A new instance
             with default config value will be used by default.
 
@@ -35,12 +34,11 @@ class Amplitude:
         remove(plugin): Remove the plugin object from client instance
     """
 
-    def __init__(self, api_key: Optional[str] = None, configuration=Config()):
+    def __init__(self, api_key: str, configuration=Config()):
         """The constructor for the Amplitude class
 
         Args:
-            api_key (str, optional): The api key of amplitude project. Defaults to None.
-                Must be set properly before tracking events.
+            api_key (str): The api key of amplitude project. Must be set properly before tracking events.
             configuration (amplitude.config.Config, optional): The configuration of client instance. A new instance
                 with default config value will be used by default.
         """
@@ -52,8 +50,7 @@ class Amplitude:
         self.add(ContextPlugin())
 
     def track(self, event: BaseEvent):
-        """
-        The function takes an event as an argument, then process and send the event.
+        """Process and send the given event object.
 
         Args:
             event (amplitude.event.BaseEvent): The event that we want to track
@@ -83,8 +80,8 @@ class Amplitude:
         """Send a group identify event to update group properties
 
         Args:
-            group_type (str): The group type
-            group_name (str): The group name
+            group_type (str): The group type e.g. "sport"
+            group_name (str): The group name e.g. "soccer"
             identify_obj (amplitude.event.Identify): Identify object contain operations of updating group properties
             event_options (amplitude.event.EventOptions): Provide additional information to group identify event
                 like user_id.
