@@ -1,6 +1,5 @@
 import abc
 import uuid
-from enum import Enum
 from typing import Optional
 
 from amplitude.event import BaseEvent, GroupIdentifyEvent, IdentifyEvent, RevenueEvent
@@ -11,17 +10,10 @@ from amplitude import utils
 from amplitude.worker import Workers
 
 
-class PluginType(Enum):
-    BEFORE = 0
-    ENRICHMENT = 1
-    DESTINATION = 2
-    OBSERVE = 3
-
-
 class Plugin(abc.ABC):
 
-    def __init__(self, plugin_type: PluginType):
-        self.plugin_type: PluginType = plugin_type
+    def __init__(self, plugin_type: constants.PluginType):
+        self.plugin_type: constants.PluginType = plugin_type
 
     def setup(self, client):
         pass
@@ -33,7 +25,7 @@ class Plugin(abc.ABC):
 
 class EventPlugin(Plugin):
 
-    def __init__(self, plugin_type: PluginType):
+    def __init__(self, plugin_type: constants.PluginType):
         super().__init__(plugin_type)
 
     def execute(self, event: BaseEvent) -> Optional[BaseEvent]:
@@ -61,22 +53,22 @@ class EventPlugin(Plugin):
 class DestinationPlugin(EventPlugin):
 
     def __init__(self):
-        super().__init__(PluginType.DESTINATION)
-        self.__timeline = Timeline()
+        super().__init__(constants.PluginType.DESTINATION)
+        self.timeline = Timeline()
 
     def setup(self, client):
-        self.__timeline.setup(client)
+        self.timeline.setup(client)
 
     def add(self, plugin):
-        self.__timeline.add(plugin)
+        self.timeline.add(plugin)
         return self
 
     def remove(self, plugin):
-        self.__timeline.remove(plugin)
+        self.timeline.remove(plugin)
         return self
 
     def execute(self, event: BaseEvent) -> None:
-        event = self.__timeline.process(event)
+        event = self.timeline.process(event)
         super().execute(event)
 
 
@@ -97,7 +89,7 @@ class AmplitudeDestinationPlugin(DestinationPlugin):
         self.workers.start()
 
     def execute(self, event: BaseEvent) -> None:
-        event = self.__timeline.process(event)
+        event = self.timeline.process(event)
         if not verify_event(event):
             raise InvalidEventError("Invalid event.")
         self.storage.push(event)
@@ -109,8 +101,8 @@ class AmplitudeDestinationPlugin(DestinationPlugin):
 class ContextPlugin(Plugin):
 
     def __init__(self):
-        super().__init__(PluginType.BEFORE)
-        self.context_string = f"{constants.SDK_LIBRARY} / {constants.SDK_VERSION}"
+        super().__init__(constants.PluginType.BEFORE)
+        self.context_string = f"{constants.SDK_LIBRARY}/{constants.SDK_VERSION}"
 
     def apply_context_data(self, event: BaseEvent):
         event.library = self.context_string

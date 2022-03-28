@@ -20,6 +20,7 @@ class Workers:
     def setup(self, configuration, storage):
         self.configuration = configuration
         self.storage = storage
+        self.response_processor.setup(configuration)
 
     def start(self):
         self.consumer.start()
