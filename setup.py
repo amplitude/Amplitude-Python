@@ -1,9 +1,11 @@
+import sys
 from setuptools import setup, find_packages
 import pathlib
 
-from amplitude.constants import SDK_VERSION
-
 here = pathlib.Path(__file__).parent.resolve()
+sys.path.insert(0, str(here / 'src'))
+
+from amplitude.constants import SDK_VERSION
 
 # Get the long description from the README file
 long_description = (here / "README.md").read_text(encoding="utf-8")
