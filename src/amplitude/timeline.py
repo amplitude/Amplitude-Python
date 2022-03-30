@@ -1,7 +1,7 @@
 import logging
 import threading
 
-from amplitude.plugin import PluginType
+from amplitude.constants import PluginType
 from amplitude.exception import InvalidEventError
 
 

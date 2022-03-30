@@ -8,6 +8,9 @@ class ResponseProcessor:
         self.configuration = worker.configuration
         self.storage = worker.storage
 
+    def setup(self, configuration):
+        self.configuration = configuration
+
     def process_response(self, res, events):
         if res.status == HttpStatus.SUCCESS:
             self.callback(events, res.code, "Event sent successfully.")

@@ -1,5 +1,7 @@
+from enum import Enum
+
 SDK_LIBRARY = "amplitude-python"
-SDK_VERSION = "0.0.1"
+SDK_VERSION = "0.0.2"
 
 EU_ZONE = "EU"
 DEFAULT_ZONE = "US"
@@ -46,3 +48,10 @@ FLUSH_INTERVAL_MILLIS = 10000
 FLUSH_MAX_RETRIES = 12
 CONNECTION_TIMEOUT = 10.0  # seconds float
 MAX_BUFFER_CAPACITY = 20000
+
+
+class PluginType(Enum):
+    BEFORE = 0
+    ENRICHMENT = 1
+    DESTINATION = 2
+    OBSERVE = 3
