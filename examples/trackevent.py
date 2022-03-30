@@ -1,7 +1,6 @@
 """A very simple example of using Amplitude Python SDK to track a event"""
 
-from amplitude.client import Amplitude
-from amplitude.event import BaseEvent
+from amplitude import Amplitude, BaseEvent
 
 
 def callback_fun(event, code, message):
