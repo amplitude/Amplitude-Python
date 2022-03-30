@@ -116,7 +116,8 @@ class Amplitude:
             self.track(event)
 
     def set_group(self, group_type: str, group_name: Union[str, List[str]], event_options: EventOptions):
-        """Set group type and group name as user property for a user.
+        """Sending an identify event to put a user in group(s) by setting group type and group name as
+            user property for a user.
 
         Args:
             group_type (str): The group type e.g. "sport"
