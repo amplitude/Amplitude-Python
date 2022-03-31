@@ -4,7 +4,7 @@ Classes:
     Amplitude: the Amplitude client class
 """
 
-from typing import Optional
+from typing import Optional, Union, List
 
 from amplitude.config import Config
 from amplitude.event import Revenue, BaseEvent, Identify, IdentifyEvent, GroupIdentifyEvent, EventOptions
@@ -114,6 +114,20 @@ class Amplitude:
             event = revenue_obj.to_revenue_event()
             event.load_event_options(event_options)
             self.track(event)
+
+    def set_group(self, group_type: str, group_name: Union[str, List[str]], event_options: EventOptions):
+        """Sending an identify event to put a user in group(s) by setting group type and group name as
+            user property for a user.
+
+        Args:
+            group_type (str): The group type e.g. "sport"
+            group_name (str): The group name e.g. "soccer"
+            event_options (amplitude.event.EventOptions): Provide additional information for event
+                like user_id.
+        """
+        identify_obj = Identify()
+        identify_obj.set(group_type, group_name)
+        self.identify(identify_obj, event_options)
 
     def flush(self):
         """Flush all event waiting to be sent in the buffer"""
