@@ -8,17 +8,21 @@ from amplitude import utils
 PLAN_KEY_MAPPING = {
     "branch": ["branch", str],
     "source": ["source", str],
-    "version": ["version", str]
+    "version": ["version", str],
+    "version_id": ["versionId", str]
+
 }
 logger = logging.getLogger(__name__)
 
 
 class Plan:
 
-    def __init__(self, branch: Optional[str], source: Optional[str], version: Optional[str]):
+    def __init__(self, branch: Optional[str] = None, source: Optional[str] = None,
+                 version: Optional[str] = None, version_id: Optional[str] = None):
         self.branch: Optional[str] = branch
         self.source: Optional[str] = source
         self.version: Optional[str] = version
+        self.version_id: Optional[str] = version_id
 
     def get_plan_body(self):
         result = {}
