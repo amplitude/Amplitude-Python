@@ -1,3 +1,4 @@
+import copy
 import logging
 import threading
 
@@ -62,7 +63,7 @@ class Timeline:
                     break
                 try:
                     if plugin.plugin_type == PluginType.DESTINATION:
-                        plugin.execute(result)
+                        plugin.execute(copy.deepcopy(result))
                     else:
                         result = plugin.execute(result)
                 except InvalidEventError:

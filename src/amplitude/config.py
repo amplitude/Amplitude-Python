@@ -23,7 +23,7 @@ class Config:
         self._flush_queue_size: int = flush_queue_size
         self._flush_size_divider: int = 1
         self.flush_interval_millis: int = flush_interval_millis
-        self.flush_max_retries = flush_max_retries
+        self.flush_max_retries: int = flush_max_retries
         self.logger = logger
         self.min_id_length: Optional[int] = min_id_length
         self.callback: Optional[Callable[[BaseEvent, int, Optional[str]], None]] = callback
