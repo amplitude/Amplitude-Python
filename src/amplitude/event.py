@@ -10,7 +10,6 @@ PLAN_KEY_MAPPING = {
     "source": ["source", str],
     "version": ["version", str],
     "version_id": ["versionId", str]
-
 }
 logger = logging.getLogger(__name__)
 
