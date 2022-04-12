@@ -135,7 +135,7 @@ class AmplitudeClientTestCase(unittest.TestCase):
             self.assertEqual(200, code)
             self.assertTrue(isinstance(event, GroupIdentifyEvent))
             self.assertTrue("group_properties" in event)
-            self.assertEqual("revenue_amount", event["event_type"])
+            self.assertEqual("$groupidentify", event["event_type"])
             self.assertEqual("test_user_id", event["user_id"])
             self.assertEqual("test_device_id", event["device_id"])
             self.assertEqual({"Sports": "Football"}, event["groups"])

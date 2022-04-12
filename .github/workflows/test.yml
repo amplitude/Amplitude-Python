@@ -1,0 +1,15 @@
+name: Unit Test
+
+on: [pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.6
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.6
+      - name: Unit Test
+        run: python -m unittest discover -s ./src -p 'test_*.py'
