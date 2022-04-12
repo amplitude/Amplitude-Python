@@ -8,8 +8,9 @@ class ResponseProcessor:
         self.configuration = worker.configuration
         self.storage = worker.storage
 
-    def setup(self, configuration):
+    def setup(self, configuration, storage):
         self.configuration = configuration
+        self.storage = storage
 
     def process_response(self, res, events):
         if res.status == HttpStatus.SUCCESS:
@@ -70,4 +71,4 @@ class ResponseProcessor:
                     self.configuration.callback(event, code, message)
                 event.callback(code, message)
             except Exception:
-                self.configuration.logger.error(f"Error callback for event {event}")
+                self.configuration.logger.exception(f"Error callback for event {event}")

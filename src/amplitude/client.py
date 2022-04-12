@@ -32,9 +32,10 @@ class Amplitude:
         flush(): Flush all event waiting to be sent in the buffer
         add(plugin): Add the plugin object to client instance.
         remove(plugin): Remove the plugin object from client instance
+        shutdown(): Shutdown the client instance
     """
 
-    def __init__(self, api_key: str, configuration=Config()):
+    def __init__(self, api_key: str, configuration: Config = Config()):
         """The constructor for the Amplitude class
 
         Args:
@@ -42,7 +43,7 @@ class Amplitude:
             configuration (amplitude.config.Config, optional): The configuration of client instance. A new instance
                 with default config value will be used by default.
         """
-        self.configuration = configuration
+        self.configuration: Config = configuration
         self.configuration.api_key = api_key
         self.__timeline = Timeline()
         self.__timeline.setup(self)
@@ -158,3 +159,8 @@ class Amplitude:
         """
         self.__timeline.remove(plugin)
         return self
+
+    def shutdown(self):
+        """Shutdown the client instance, not accepting new events, flush all events in buffer"""
+        self.configuration.opt_out = True
+        self.__timeline.shutdown()
