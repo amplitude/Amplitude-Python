@@ -63,6 +63,12 @@ class Response:
         return None
 
     @property
+    def events_with_invalid_id_lengths(self):
+        if "events_with_invalid_id_lengths" in self.body:
+            return self.body["events_with_invalid_id_lengths"]
+        return None
+
+    @property
     def silenced_events(self):
         if "silenced_events" in self.body:
             return self.body["silenced_events"]
@@ -89,6 +95,9 @@ class Response:
         if self.events_with_invalid_fields:
             for field in self.events_with_invalid_fields:
                 result.update(self.events_with_invalid_fields[field])
+        if self.events_with_invalid_id_lengths:
+            for field in self.events_with_invalid_id_lengths:
+                result.update(self.events_with_invalid_id_lengths[field])
         if self.silenced_events:
             result.update(self.silenced_events)
         return result
