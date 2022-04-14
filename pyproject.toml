@@ -1,5 +1,7 @@
 [tool.semantic_release]
-version_variable = "src/amplitude/constants.py:SDK_VERSION"
+version_variable = [
+    "src/amplitude/constants.py:SDK_VERSION"
+]
 major_on_zero = true
 branch = "main"
 upload_to_PyPI = true
