@@ -1,0 +1,9 @@
+[semantic_release]
+version_variable = [
+    "src/amplitude/constants.py:SDK_VERSION"
+]
+major_on_zero = true
+branch = "main"
+upload_to_PyPI = true
+upload_to_release = true
+build_command = "pip install build && python -m build"

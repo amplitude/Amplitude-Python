@@ -134,3 +134,4 @@ dmypy.json
 # Local system files
 .DS_Store
 .vscode/
+buildandupload.sh
