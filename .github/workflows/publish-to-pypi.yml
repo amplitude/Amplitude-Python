@@ -30,11 +30,6 @@ jobs:
       - name: Run Test
         run: python -m unittest discover -s ./src -p 'test_*.py'
 
-      - name: Configure Git User
-        run: |
-          git config --global user.name amplitude-sdk-bot
-          git config --global user.email amplitude-sdk-bot@users.noreply.github.com
-
       - name: Publish distribution PyPI
         uses: relekang/python-semantic-release@master
         with:
