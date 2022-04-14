@@ -1,6 +1,12 @@
 name: Publish to PyPI
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      dryRun:
+        description: 'Do a dry run to preview instead of a real release'
+        required: true
+        default: 'true'
 
 jobs:
   authorize:
@@ -30,7 +36,14 @@ jobs:
       - name: Run Test
         run: python -m unittest discover -s ./src -p 'test_*.py'
 
+      - name: Publish distribution PyPI --dry-run
+        if: ${{ github.event.inputs.dryRun == 'true'}}
+        run: |
+          python -m pip install python-semantic-release
+          semantic-release publish --noop
+
       - name: Publish distribution PyPI
+        if: ${{ github.event.inputs.dryRun == 'false'}}
         uses: relekang/python-semantic-release@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
