@@ -17,3 +17,4 @@ event.event_properties = {
 }
 client.track(event)
 client.flush()
+client.shutdown()

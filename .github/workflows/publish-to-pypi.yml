@@ -1,0 +1,51 @@
+name: Publish to PyPI
+
+on:
+  workflow_dispatch:
+    inputs:
+      dryRun:
+        description: 'Do a dry run to preview instead of a real release'
+        required: true
+        default: 'true'
+
+jobs:
+  authorize:
+    name: Authorize
+    runs-on: ubuntu-latest
+    steps:
+      - name: ${{ github.actor }} permission check to do a release
+        uses: "lannonbr/repo-permission-check-action@2.0.2"
+        with:
+          permission: "write"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-n-publish:
+    name: Build and publish to PyPI
+    runs-on: ubuntu-latest
+    needs: [authorize]
+    steps:
+      - name: Checkout for release to PyPI
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.7
+
+      - name: Run Test
+        run: python -m unittest discover -s ./src -p 'test_*.py'
+
+      - name: Publish distribution PyPI --dry-run
+        if: ${{ github.event.inputs.dryRun == 'true'}}
+        run: |
+          python -m pip install python-semantic-release
+          semantic-release publish --noop
+
+      - name: Publish distribution PyPI
+        if: ${{ github.event.inputs.dryRun == 'false'}}
+        uses: relekang/python-semantic-release@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          repository_username: __token__
+          repository_password: ${{ secrets.PYPI_API_TOKEN }}

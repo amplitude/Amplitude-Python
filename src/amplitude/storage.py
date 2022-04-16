@@ -72,7 +72,8 @@ class InMemoryStorage(Storage):
             result = self.ready_queue[:batch_size]
             self.ready_queue = self.ready_queue[batch_size:]
             index = 0
-            while index < len(self.buffer_data) and index < (batch_size - len(result)) and current_time >= self.buffer_data[index][0]:
+            while index < len(self.buffer_data) and index < (batch_size - len(result)) and \
+                    current_time >= self.buffer_data[index][0]:
                 event = self.buffer_data[index][1]
                 result.append(event)
                 index += 1

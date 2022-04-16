@@ -1,0 +1,14 @@
+[tool.semantic_release]
+version_variable = [
+    "src/amplitude/constants.py:SDK_VERSION"
+]
+major_on_zero = true
+branch = "main"
+upload_to_PyPI = true
+upload_to_release = true
+build_command = "pip install build && python -m build"
+version_source = "commit"
+commit_version_number = true
+commit_subject = "chore(release): Bump version to {version}"
+commit_message = "chore(release): Bump version to {version}"
+commit_author = "amplitude-sdk-bot <amplitude-sdk-bot@users.noreply.github.com>"

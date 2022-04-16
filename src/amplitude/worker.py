@@ -2,8 +2,8 @@ import json
 from concurrent.futures import ThreadPoolExecutor
 from threading import Thread
 
+from amplitude.exception import InvalidAPIKeyError
 from amplitude.http_client import HttpClient
-from amplitude import utils
 from amplitude.processor import ResponseProcessor
 
 
@@ -20,7 +20,7 @@ class Workers:
     def setup(self, configuration, storage):
         self.configuration = configuration
         self.storage = storage
-        self.response_processor.setup(configuration)
+        self.response_processor.setup(configuration, storage)
 
     def start(self):
         self.consumer.start()
@@ -33,13 +33,17 @@ class Workers:
 
     def flush(self):
         events = self.storage.pull_all()
-        self.send(events)
+        if events:
+            self.send(events)
 
     def send(self, events):
         url = self.configuration.server_url
         payload = self.get_payload(events)
         res = HttpClient.post(url, payload)
-        self.response_processor.process_response(res, events)
+        try:
+            self.response_processor.process_response(res, events)
+        except InvalidAPIKeyError:
+            self.configuration.logger.error("Invalid API Key")
 
     def get_payload(self, events) -> bytes:
         payload_body = {
@@ -64,4 +68,3 @@ class Workers:
                     wait_time = self.storage.wait_time / 1000
                     if wait_time > 0:
                         self.storage.lock.wait(wait_time)
-

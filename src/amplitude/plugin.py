@@ -71,6 +71,9 @@ class DestinationPlugin(EventPlugin):
         event = self.timeline.process(event)
         super().execute(event)
 
+    def shutdown(self):
+        self.timeline.shutdown()
+
 
 class AmplitudeDestinationPlugin(DestinationPlugin):
 
@@ -96,6 +99,10 @@ class AmplitudeDestinationPlugin(DestinationPlugin):
 
     def flush(self):
         self.workers.flush()
+
+    def shutdown(self):
+        self.timeline.shutdown()
+        self.workers.stop()
 
 
 class ContextPlugin(Plugin):

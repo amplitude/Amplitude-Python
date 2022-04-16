@@ -4,7 +4,7 @@
 The official Amplitude backend Python SDK for server-side instrumentation.
 
 ## Installation and Quick Start
-Please visit the [Developer Center](https://developers.amplitude.com/docs/python) for instructions on installing and using our the SDK.
+Please visit the [Developer Center](https://developers.amplitude.com/docs/python-beta) for instructions on installing and using our the SDK.
 
 ## Changelog
 View the [releases here](https://github.com/amplitude/Amplitude-Python/releases).

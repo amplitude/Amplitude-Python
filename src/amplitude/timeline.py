@@ -44,7 +44,7 @@ class Timeline:
             try:
                 destination.flush()
             except Exception:
-                self.logger.error(f"Error for flush events")
+                self.logger.exception("Error for flush events")
 
     def process(self, event):
         if self.configuration.opt_out:
@@ -67,7 +67,11 @@ class Timeline:
                     else:
                         result = plugin.execute(result)
                 except InvalidEventError:
-                    self.logger.error(f"Invalid event body {event}")
+                    self.logger.exception(f"Invalid event body {event}")
                 except Exception:
-                    self.logger.error(f"Error for apply {plugin_type.name} plugin for event {event}")
+                    self.logger.exception(f"Error for apply {plugin_type.name} plugin for event {event}")
         return result
+
+    def shutdown(self):
+        for destination in self.plugins[PluginType.DESTINATION]:
+            destination.shutdown()
