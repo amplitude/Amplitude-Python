@@ -118,6 +118,11 @@ class AmplitudeClientTestCase(unittest.TestCase):
                 self.client.configuration.use_batch = use_batch
                 identify_obj = Identify()
                 self.assertFalse(identify_obj.is_valid())
+                with self.assertLogs("test", "ERROR") as cm:
+                    self.client.configuration.logger = logging.getLogger("test")
+                    self.client.identify(identify_obj,
+                                         EventOptions(user_id="test_user_id", device_id="test_device_id"))
+                    self.assertEqual(["ERROR:test:Empty identify properties"], cm.output)
                 identify_obj.set("birth_date", "4-1-2022")
                 self.assertTrue(identify_obj.is_valid())
                 self.assertEqual({"$set": {"birth_date": "4-1-2022"}}, identify_obj.user_properties)
@@ -147,6 +152,11 @@ class AmplitudeClientTestCase(unittest.TestCase):
                 self.client.configuration.use_batch = use_batch
                 identify_obj = Identify()
                 self.assertFalse(identify_obj.is_valid())
+                with self.assertLogs("test", "ERROR") as cm:
+                    self.client.configuration.logger = logging.getLogger("test")
+                    self.client.group_identify("Sports", "Football", identify_obj,
+                                               EventOptions(user_id="test_user_id", device_id="test_device_id"))
+                    self.assertEqual(["ERROR:test:Empty group identify properties"], cm.output)
                 identify_obj.set("team_name", "Super Power")
                 self.assertTrue(identify_obj.is_valid())
                 self.assertEqual({"$set": {"team_name": "Super Power"}}, identify_obj.user_properties)
@@ -154,6 +164,32 @@ class AmplitudeClientTestCase(unittest.TestCase):
                                            EventOptions(user_id="test_user_id", device_id="test_device_id"))
                 self.client.flush()
                 post_method.assert_called_once()
+
+    def test_set_group(self):
+        post_method = MagicMock()
+        HttpClient.post = post_method
+        res = Response(HttpStatus.SUCCESS)
+        post_method.return_value = res
+
+        def callback_func(event, code, message=None):
+            self.assertEqual(200, code)
+            self.assertTrue(isinstance(event, IdentifyEvent))
+            self.assertTrue("user_properties" in event)
+            self.assertEqual("$identify", event["event_type"])
+            self.assertEqual("test_user_id", event["user_id"])
+            self.assertEqual("test_device_id", event["device_id"])
+            self.assertEqual({"$set": {"type": ["test_group", "test_group_2"]}}, event.user_properties)
+
+        self.client.configuration.callback = callback_func
+        for use_batch in (True, False):
+            with self.subTest(use_batch=use_batch):
+                post_method.reset_mock()
+                self.client.configuration.use_batch = use_batch
+                self.client.set_group("type", ["test_group", "test_group_2"],
+                                      EventOptions(user_id="test_user_id", device_id="test_device_id"))
+                self.client.flush()
+                post_method.assert_called_once()
+
 
     def test_revenue(self):
         post_method = MagicMock()
@@ -169,7 +205,7 @@ class AmplitudeClientTestCase(unittest.TestCase):
             self.assertEqual("test_user_id", event["user_id"])
             self.assertEqual("test_device_id", event["device_id"])
             self.assertEqual({'$price': 60.2, '$productId': 'P63', '$quantity': 3, '$receipt': 'A0001',
-                              '$receiptSig': '0001A', '$revenue': None, '$revenueType': None, 'other_property': 'test'},
+                              '$receiptSig': '0001A', 'other_property': 'test'},
                              event["event_properties"])
 
         self.client.configuration.callback = callback_func
@@ -179,6 +215,10 @@ class AmplitudeClientTestCase(unittest.TestCase):
                 self.client.configuration.use_batch = use_batch
                 revenue_obj = Revenue(price="abc", quantity=3, product_id="P63", properties={"other_property": "test"})
                 self.assertFalse(revenue_obj.is_valid())
+                with self.assertLogs("test", "ERROR") as cm:
+                    self.client.configuration.logger = logging.getLogger("test")
+                    self.client.revenue(revenue_obj, EventOptions(user_id="test_user_id", device_id="test_device_id"))
+                    self.assertEqual(["ERROR:test:Invalid price for revenue event"], cm.output)
                 revenue_obj.price = 60.2
                 self.assertTrue(revenue_obj.is_valid())
                 revenue_obj.set_receipt("A0001", "0001A")

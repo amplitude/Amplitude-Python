@@ -15,7 +15,7 @@ def truncate(obj):
         if not obj:
             return {}
         if len(obj) > constants.MAX_PROPERTY_KEYS:
-            logger.error(f"Too many properties: {obj}")
+            logger.error("Too many properties")
             return {}
         for key, value in obj.items():
             obj[key] = truncate(value)

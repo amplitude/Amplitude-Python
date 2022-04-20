@@ -110,7 +110,7 @@ class Amplitude:
                 like user_id.
         """
         if not revenue_obj.is_valid():
-            self.configuration.logger.error("Missing price for revenue event")
+            self.configuration.logger.error("Invalid price for revenue event")
         else:
             event = revenue_obj.to_revenue_event()
             event.load_event_options(event_options)

@@ -1,4 +1,4 @@
-"""Amplitude event module.
+"""Amplitude event module with Classes of events and special events wrappers.
 
 Classes:
     Plan: Tracking plan info includes branch, source, version, version_id.
@@ -313,8 +313,10 @@ class EventOptions:
             return False
         if not isinstance(value, EVENT_KEY_MAPPING[key][1]):
             logger.error(
-                f"Event property value type: {type(value)}. Expect {EVENT_KEY_MAPPING[key][1]}")
+                f"Event property {key} value type: {type(value)}. Expect {EVENT_KEY_MAPPING[key][1]}")
             return False
+        if isinstance(value, dict):
+            return is_validate_object(value)
         return True
 
     def callback(self, status_code: int, message=None) -> None:
@@ -483,7 +485,7 @@ class BaseEvent(EventOptions):
             return
         for key in EVENT_KEY_MAPPING:
             if key in event_options:
-                self[key] = event_options[key]
+                self[key] = copy.deepcopy(event_options[key])
 
 
 class Identify:
@@ -664,6 +666,7 @@ class Identify:
 
     def _validate(self, operation, key, value):
         if constants.IDENTITY_OP_CLEAR_ALL in self._properties or key in self._properties_set:
+            logger.error("Key or clear all operation already set.")
             return False
         if operation == constants.IDENTITY_OP_ADD:
             return isinstance(value, (float, int))
@@ -1013,7 +1016,7 @@ class Revenue:
         """
         event_properties = {}
         if self.properties:
-            event_properties = self.properties.copy()
+            event_properties = copy.deepcopy(self.properties)
         event_properties.update({constants.REVENUE_PRODUCT_ID: self.product_id,
                                  constants.REVENUE_QUANTITY: self.quantity,
                                  constants.REVENUE_PRICE: self.price,
@@ -1021,7 +1024,7 @@ class Revenue:
                                  constants.REVENUE_RECEIPT: self.receipt,
                                  constants.REVENUE_RECEIPT_SIG: self.receipt_sig,
                                  constants.REVENUE: self.revenue})
-        return event_properties
+        return {key: value for key, value in event_properties.items() if value is not None}
 
 
 class RevenueEvent(BaseEvent):
