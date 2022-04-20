@@ -55,7 +55,7 @@ class ResponseProcessor:
             self.push_to_storage(events_for_retry_delay, 30000, res)
             self.push_to_storage(events_for_retry, 0, res)
         else:
-            self.callback(events, res.code, "Unknown error")
+            self.callback(events, res.code, res.error or "Unknown error")
 
     def push_to_storage(self, events, delay, res):
         for event in events:

@@ -2,7 +2,7 @@ import json
 from enum import Enum
 from socket import timeout
 from typing import Optional
-from urllib import request, response
+from urllib import request, response, error
 
 from amplitude import constants
 
@@ -134,4 +134,14 @@ class HttpClient:
         except timeout:
             result.code = 408
             result.status = HttpStatus.TIMEOUT
+        except error.HTTPError as e:
+            try:
+                result.parse(e)
+            except:
+                result = Response()
+                result.code = e.code
+                result.status = Response.get_status(e.code)
+                result.body = {'error': e.reason}
+        except error.URLError as e:
+            result.body = {'error': str(e.reason)}
         return result
