@@ -1,7 +1,7 @@
 from enum import Enum
 
 SDK_LIBRARY = "amplitude-python"
-SDK_VERSION = "0.2.0"
+SDK_VERSION = "0.2.1"
 
 EU_ZONE = "EU"
 DEFAULT_ZONE = "US"
