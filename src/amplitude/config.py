@@ -12,7 +12,7 @@ class Config:
                  flush_queue_size: int = constants.FLUSH_QUEUE_SIZE,
                  flush_interval_millis: int = constants.FLUSH_INTERVAL_MILLIS,
                  flush_max_retries: int = constants.FLUSH_MAX_RETRIES,
-                 logger=logging.getLogger(__name__),
+                 logger=logging.getLogger(constants.LOGGER_NAME),
                  min_id_length: Optional[int] = None,
                  callback: Optional[Callable[[BaseEvent, int, Optional[str]], None]] = None,
                  server_zone: str = constants.DEFAULT_ZONE,

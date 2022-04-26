@@ -3,7 +3,7 @@ import time
 
 from amplitude import constants
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(constants.LOGGER_NAME)
 
 
 def current_milliseconds() -> int:
@@ -15,7 +15,7 @@ def truncate(obj):
         if not obj:
             return {}
         if len(obj) > constants.MAX_PROPERTY_KEYS:
-            logger.error(f"Too many properties: {obj}")
+            logger.error(f"Too many properties. {constants.MAX_PROPERTY_KEYS} maximum.")
             return {}
         for key, value in obj.items():
             obj[key] = truncate(value)

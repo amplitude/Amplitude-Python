@@ -23,7 +23,7 @@ class Amplitude:
     Attributes:
         configuration (amplitude.config.Config): the configuration of client instance
 
-    Methods
+    Methods:
         track(event): Process and send event
         identify(identify_obj, event_properties, event_options): Send an identify event to update user properties
         group_identify(group_type, group_name, identify_obj, event_options, event_properties, user_properties): Send
@@ -110,7 +110,7 @@ class Amplitude:
                 like user_id.
         """
         if not revenue_obj.is_valid():
-            self.configuration.logger.error("Missing price for revenue event")
+            self.configuration.logger.error("Invalid price for revenue event")
         else:
             event = revenue_obj.to_revenue_event()
             event.load_event_options(event_options)

@@ -1,5 +1,5 @@
 <!---
-Thanks for contributing to the Amplitude Java SDK! 🎉
+Thanks for contributing to the Amplitude Python SDK! 🐍
 
 Please fill out the following sections to help us quickly review your pull request.
 --->
