@@ -1,7 +1,6 @@
 """Amplitude event module with Classes of events and special events wrappers.
 
 Classes:
-    Plan: Tracking plan info includes branch, source, version, version_id.
     EventOptions: Base Class of all events. Holds common attributes that apply to all events.
     BaseEvent: Basic event class. Subclass of EventOptions.
     Identify: A class used to create identify and group identify event.
@@ -9,6 +8,7 @@ Classes:
     GroupIdentifyEvent: A special event class. Used to update group properties without an actual event
     Revenue: A class used to create revenue event.
     RevenueEvent: A special event class. Used to record revenue information.
+    Plan: Tracking plan info includes branch, source, version, version_id.
 """
 
 import copy
@@ -25,7 +25,7 @@ PLAN_KEY_MAPPING = {
     "version": ["version", str],
     "version_id": ["versionId", str]
 }
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(constants.LOGGER_NAME)
 
 
 class Plan:
@@ -70,7 +70,7 @@ class Plan:
                 result[PLAN_KEY_MAPPING[key][0]] = self.__dict__[key]
             else:
                 logger.error(
-                    f"plan.{key} value type: {type(self.__dict__[key])}. Expect {PLAN_KEY_MAPPING[key][1]}")
+                    f"Plan.{key} expected {PLAN_KEY_MAPPING[key][1]} but received {type(self.__dict__[key])}.")
         return result
 
 
@@ -313,7 +313,7 @@ class EventOptions:
             return False
         if not isinstance(value, EVENT_KEY_MAPPING[key][1]):
             logger.error(
-                f"Event property {key} value type: {type(value)}. Expect {EVENT_KEY_MAPPING[key][1]}")
+                f"Event property {key} expected {EVENT_KEY_MAPPING[key][1]} but received {type(value)}.")
             return False
         if isinstance(value, dict):
             return is_validate_object(value)
@@ -993,12 +993,12 @@ class Revenue:
         return self
 
     def is_valid(self):
-        """Check if a revenue instance is a valid one
+        """Check if a revenue instance has a valid float price and a positive integer quantity.
 
         Returns:
-            True if price is a float number, False otherwise
+            True if the revenue instance is valid, False otherwise
         """
-        return isinstance(self.price, float)
+        return isinstance(self.price, float) & isinstance(self.quantity, int) and self.quantity > 0
 
     def to_revenue_event(self):
         """Create and return a RevenueEvent instance, set revenue information as event_properties.

@@ -4,6 +4,7 @@ import threading
 
 from amplitude.constants import PluginType
 from amplitude.exception import InvalidEventError
+from amplitude.constants import LOGGER_NAME
 
 
 class Timeline:
@@ -25,7 +26,7 @@ class Timeline:
     def logger(self):
         if self.configuration:
             return self.configuration.logger
-        return logging.getLogger(__name__)
+        return logging.getLogger(LOGGER_NAME)
 
     def setup(self, client):
         self.configuration = client.configuration

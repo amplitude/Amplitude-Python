@@ -17,7 +17,7 @@ class AmplitudeClientTestCase(unittest.TestCase):
     def tearDown(self) -> None:
         self.client.shutdown()
 
-    def test_track_success(self):
+    def test_amplitude_client_track_success(self):
         post_method = MagicMock()
         HttpClient.post = post_method
         res = Response(HttpStatus.SUCCESS)
@@ -40,7 +40,7 @@ class AmplitudeClientTestCase(unittest.TestCase):
                 self.assertEqual(25, len(events))
                 post_method.assert_called()
 
-    def test_track_invalid_api_key(self):
+    def test_amplitude_client_track_invalid_api_key_log_error(self):
         post_method = MagicMock()
         HttpClient.post = post_method
         res = Response(HttpStatus.INVALID_REQUEST)
@@ -57,7 +57,7 @@ class AmplitudeClientTestCase(unittest.TestCase):
                     post_method.assert_called_once()
                     self.assertEqual(["ERROR:test:Invalid API Key"], cm.output)
 
-    def test_track_invalid(self):
+    def test_amplitude_client_track_invalid_response_then_success_response(self):
         post_method = MagicMock()
         HttpClient.post = post_method
         invalid_res = Response(HttpStatus.INVALID_REQUEST)
@@ -97,7 +97,7 @@ class AmplitudeClientTestCase(unittest.TestCase):
                 self.assertEqual([(1, 0), (2, 0), (5, 0), (6, 0), (8, 0),
                                   (0, 1), (3, 1), (4, 1), (7, 1), (9, 1)], events)
 
-    def test_identify(self):
+    def test_amplitude_client_identify_invalid_log_error_then_success(self):
         post_method = MagicMock()
         HttpClient.post = post_method
         res = Response(HttpStatus.SUCCESS)
@@ -130,7 +130,7 @@ class AmplitudeClientTestCase(unittest.TestCase):
                 self.client.flush()
                 post_method.assert_called_once()
 
-    def test_group_identify(self):
+    def test_amplitude_client_group_identify_invalid_log_error_then_success(self):
         post_method = MagicMock()
         HttpClient.post = post_method
         res = Response(HttpStatus.SUCCESS)
@@ -165,7 +165,7 @@ class AmplitudeClientTestCase(unittest.TestCase):
                 self.client.flush()
                 post_method.assert_called_once()
 
-    def test_set_group(self):
+    def test_amplitude_set_group_success(self):
         post_method = MagicMock()
         HttpClient.post = post_method
         res = Response(HttpStatus.SUCCESS)
@@ -190,8 +190,7 @@ class AmplitudeClientTestCase(unittest.TestCase):
                 self.client.flush()
                 post_method.assert_called_once()
 
-
-    def test_revenue(self):
+    def test_amplitude_client_revenue_invalid_log_error_then_success(self):
         post_method = MagicMock()
         HttpClient.post = post_method
         res = Response(HttpStatus.SUCCESS)
@@ -226,7 +225,7 @@ class AmplitudeClientTestCase(unittest.TestCase):
                 self.client.flush()
                 post_method.assert_called_once()
 
-    def test_flush(self):
+    def test_amplitude_client_flush_success(self):
         post_method = MagicMock()
         HttpClient.post = post_method
         res = Response(HttpStatus.SUCCESS)
@@ -250,7 +249,7 @@ class AmplitudeClientTestCase(unittest.TestCase):
                 self.client.flush()
                 post_method.assert_called_once()
 
-    def test_add_remove(self):
+    def test_amplitude_add_remove_plugins_success(self):
         timeline = self.client._Amplitude__timeline
         before_plugin = EventPlugin(PluginType.BEFORE)
         enrich_plugin = EventPlugin(plugin_type=PluginType.ENRICHMENT)

@@ -3,7 +3,7 @@ import time
 
 from amplitude import constants
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(constants.LOGGER_NAME)
 
 
 def current_milliseconds() -> int:

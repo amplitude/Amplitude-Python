@@ -17,6 +17,7 @@ SERVER_URL = {
         HTTP_V2: "https://api2.amplitude.com/2/httpapi"
     }
 }
+LOGGER_NAME = "amplitude"
 
 IDENTIFY_EVENT = "$identify"
 GROUP_IDENTIFY_EVENT = "$groupidentify"
