@@ -116,7 +116,7 @@ class AmplitudeEventTestCase(unittest.TestCase):
         expect_dict["event_properties"] = {"test_max_key": {}}
         with self.assertLogs(None, "ERROR") as cm:
             self.assertEqual(expect_dict, event.get_event_body())
-            self.assertEqual(['ERROR:amplitude:Too many properties'], cm.output)
+            self.assertEqual([f'ERROR:amplitude:Too many properties. {constants.MAX_PROPERTY_KEYS} maximum.'], cm.output)
 
     def test_base_event_set_list_in_dict_attributes_success(self):
         event = BaseEvent(event_type="test_event", user_id="test_user")
