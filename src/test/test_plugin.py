@@ -21,6 +21,7 @@ class AmplitudePluginTestCase(unittest.TestCase):
         self.assertTrue(timeline.plugins[PluginType.BEFORE])
         context_plugin = timeline.plugins[PluginType.BEFORE][0]
         self.assertEqual(PluginType.BEFORE, context_plugin.plugin_type)
+        client.shutdown()
 
     def test_plugin_context_plugin_execute_event_success(self):
         context_plugin = ContextPlugin()
