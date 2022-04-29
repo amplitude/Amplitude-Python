@@ -88,8 +88,7 @@ class AmplitudeDestinationPlugin(DestinationPlugin):
         self.configuration = client.configuration
         self.storage = client.configuration.get_storage()
         self.workers.setup(client.configuration, self.storage)
-        self.storage.setup(client.configuration)
-        self.workers.start()
+        self.storage.setup(client.configuration, self.workers)
 
     def execute(self, event: BaseEvent) -> None:
         event = self.timeline.process(event)

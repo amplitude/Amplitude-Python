@@ -39,6 +39,7 @@ class InMemoryStorage(Storage):
         self.ready_queue: List[BaseEvent] = []
         self.buffer_lock_cv = Condition()
         self.configuration = None
+        self.workers = None
 
     @property
     def lock(self):
@@ -50,12 +51,15 @@ class InMemoryStorage(Storage):
 
     @property
     def wait_time(self) -> int:
+        if self.ready_queue:
+            return -1
         if self.buffer_data:
             return min(self.buffer_data[0][0] - utils.current_milliseconds(), self.configuration.flush_interval_millis)
         return self.configuration.flush_interval_millis
 
-    def setup(self, configuration):
+    def setup(self, configuration, workers):
         self.configuration = configuration
+        self.workers = workers
 
     def push(self, event: BaseEvent, delay: int = 0) -> Tuple[bool, Optional[str]]:
         if event.retry and self.total_events > constants.MAX_BUFFER_CAPACITY:
@@ -64,6 +68,7 @@ class InMemoryStorage(Storage):
             return False, f"Event reached max retry times {self.max_retry}."
         total_delay = delay + self._get_retry_delay(event.retry)
         self._insert_event(total_delay, event)
+        self.workers.start()
         return True, None
 
     def pull(self, batch_size: int) -> List[BaseEvent]:
