@@ -21,7 +21,7 @@ class ResponseProcessor:
             if len(events) == 1:
                 self.callback(events, res.code, res.error)
             else:
-                self.configuration.increase_flush_divider()
+                self.configuration._increase_flush_divider()
                 self.push_to_storage(events, 0, res)
         elif res.status == HttpStatus.INVALID_REQUEST:
             if res.error.startswith("Invalid API key:"):
