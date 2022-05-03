@@ -16,7 +16,7 @@ class Workers:
         self.is_started = False
         self.configuration = None
         self.storage = None
-        self.response_processor = ResponseProcessor(self)
+        self.response_processor = ResponseProcessor()
 
     def setup(self, configuration, storage):
         self.configuration = configuration
@@ -61,7 +61,7 @@ class Workers:
                 payload_body["events"].append(event_body)
         if self.configuration.options:
             payload_body["options"] = self.configuration.options
-        return json.dumps(payload_body).encode('utf8')
+        return json.dumps(payload_body, sort_keys=True).encode('utf8')
 
     def buffer_consumer(self):
         if self.is_active:
