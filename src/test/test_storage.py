@@ -1,3 +1,4 @@
+import time
 import unittest
 import random
 from threading import Thread
@@ -98,36 +99,26 @@ class AmplitudeStorageTestCase(unittest.TestCase):
 
     def test_storage_in_memory_storage_wait_time_event_in_buffer_flush_interval_maximum(self):
         self.storage.workers.start = MagicMock()
-        cur_time = MagicMock()
-        cur_time.return_value = 0
-        amplitude.utils.current_milliseconds = cur_time
         self.storage.push(BaseEvent("test_event", "test_user"), 200)
-        self.assertEqual(200, self.storage.wait_time)
+        self.assertTrue(0 < self.storage.wait_time <= 200)
         self.storage.pull_all()
-        self.storage.push(BaseEvent("test_event", "test_user"), constants.FLUSH_INTERVAL_MILLIS + 50)
-        self.assertEqual(constants.FLUSH_INTERVAL_MILLIS, self.storage.wait_time)
+        self.storage.push(BaseEvent("test_event", "test_user"), constants.FLUSH_INTERVAL_MILLIS + 500)
+        self.assertTrue(constants.FLUSH_INTERVAL_MILLIS >= self.storage.wait_time)
 
-    def test_storage_in_memory_storage_push_retry_event_with_retry_delay(self):
+    def test_storage_in_memory_storage_retry_event_verify_retry_delay_success(self):
         self.storage.workers.start = MagicMock()
-        cur_time = MagicMock()
-        cur_time.return_value = 0
-        amplitude.utils.current_milliseconds = cur_time
-        expect_delay = [0, 100, 100, 200, 200, 400, 400, 800, 800, 1600, 1600, 3200]
+        expect_delay = [0, 100, 100, 200, 200, 400, 400, 800, 800, 1600, 1600, 3200, 3200]
         for retry, delay in enumerate(expect_delay):
-            self.storage.pull_all()
             event = BaseEvent("test_event", "test_user")
             event.retry = retry
-            self.storage.push(event)
-            self.assertEqual(delay, self.storage.wait_time)
+            self.assertEqual(delay, self.storage._get_retry_delay(event.retry))
 
     def test_storage_pull_events_from_ready_queue_and_buffer_data_success(self):
         self.storage.workers.start = MagicMock()
-        cur_time = MagicMock()
-        cur_time.return_value = 0
-        amplitude.utils.current_milliseconds = cur_time
         self.push_event(self.storage, set(), 200)
-        cur_time.return_value = self.storage.buffer_data[0][0]
         first_event_in_buffer_data = self.storage.buffer_data[0][1]
+        # wait 100 ms - max delay of push_event()
+        time.sleep(0.1)
         events = self.storage.pull(len(self.storage.ready_queue) + 1)
         self.assertEqual(first_event_in_buffer_data, events[-1])
         self.assertEqual(200 - len(events), self.storage.total_events)

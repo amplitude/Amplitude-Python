@@ -61,18 +61,20 @@ class AmplitudeWorkersTestCase(unittest.TestCase):
         HttpClient.post = MagicMock()
         HttpClient.post.return_value = success_response
         self.workers.configuration.flush_interval_millis = 10
-        for i in range(50):
-            self.workers.storage.push(BaseEvent("test_event_" + str(i), "test_user"))
+        self.push_event(self.get_events_list(50))
+        self.assertTrue(self.workers.is_started)
         time.sleep(self.workers.configuration.flush_interval_millis / 1000 + 1)
         self.assertEqual(50, len(self.events_dict[200]))
+        self.assertFalse(self.workers.is_started)
+        self.push_event(self.get_events_list(50))
+        self.assertTrue(self.workers.is_started)
         HttpClient.post.assert_called()
 
     def test_worker_flush_events_in_storage_success(self):
         success_response = Response(HttpStatus.SUCCESS)
         HttpClient.post = MagicMock()
         HttpClient.post.return_value = success_response
-        for i in range(50):
-            self.workers.storage.push(BaseEvent("test_event_" + str(i), "test_user"))
+        self.push_event(self.get_events_list(50))
         self.workers.flush()
         self.assertEqual(50, len(self.events_dict[200]))
         HttpClient.post.assert_called()
@@ -206,7 +208,7 @@ class AmplitudeWorkersTestCase(unittest.TestCase):
         self.workers.flush()
         self.assertEqual(self.events_dict[200], set(events[2:]))
 
-    def test_worker_multithreading_with_random_response_success(self):
+    def test_worker_multithreading_process_events_with_random_response_success(self):
         success_response = Response(HttpStatus.SUCCESS)
         timeout_response = Response(HttpStatus.TIMEOUT)
         unknown_error_response = Response(HttpStatus.UNKNOWN)
@@ -229,52 +231,39 @@ class AmplitudeWorkersTestCase(unittest.TestCase):
 
         def dummy_post(url, payload, header=None):
             i = random.randint(0, 100)
-            if i == 0:
+            if i <= 2:
                 return timeout_response
-            if i == 1:
+            if i <= 5:
                 return unknown_error_response
-            if i == 2:
+            if i <= 8:
                 return too_many_requests_response
-            if i == 3:
+            if i <= 11:
                 return failed_response
-            if i == 4:
+            if i <= 14:
                 return payload_too_large_response
-            if i == 5:
+            if i <= 17:
                 return invalid_response
             return success_response
 
         HttpClient.post = dummy_post
-        # Test multithreading with workers.send(events)
-        with self.subTest():
-            threads = []
-            self.events_dict.clear()
-            for _ in range(50):
-                t = Thread(target=self.workers.send, args=(self.get_events_list(100),))
-                threads.append(t)
-                t.start()
-            for t in threads:
-                t.join()
-            while self.workers.storage.total_events:
-                time.sleep(0.01)
-            total_events = sum([len(self.events_dict[s]) for s in self.events_dict])
-            self.assertEqual(5000, total_events)
-        # Test multithreading with storage.push(event)
-        with self.subTest():
-            threads = []
-            self.events_dict.clear()
-            for _ in range(50):
-                t = Thread(target=self.push_event, args=(100,))
-                threads.append(t)
-                t.start()
-            for t in threads:
-                t.join()
-            while self.workers.storage.total_events:
-                time.sleep(0.01)
-            total_events = sum([len(self.events_dict[s]) for s in self.events_dict])
-            self.assertEqual(5000, total_events)
+        for target_func in [self.workers.send, self.push_event]:
+            with self.subTest(target_func=target_func):
+                threads = []
+                self.events_dict.clear()
+                for _ in range(50):
+                    t = Thread(target=target_func, args=(self.get_events_list(100),))
+                    threads.append(t)
+                    t.start()
+                for t in threads:
+                    t.join()
+                while self.workers.storage.total_events > 0:
+                    time.sleep(0.1)
+                total_events = sum([len(self.events_dict[s]) for s in self.events_dict])
+                self.assertEqual(0, self.workers.storage.total_events)
+                self.assertEqual(5000, total_events)
 
-    def push_event(self, n):
-        for event in self.get_events_list(n):
+    def push_event(self, events):
+        for event in events:
             self.workers.storage.push(event)
 
     @staticmethod

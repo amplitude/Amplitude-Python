@@ -64,18 +64,22 @@ class Workers:
         return json.dumps(payload_body, sort_keys=True).encode('utf8')
 
     def buffer_consumer(self):
-        if self.is_active:
-            with self.storage.lock:
-                self.storage.lock.wait(self.configuration.flush_interval_millis / 1000)
-                while True:
-                    if not self.storage.total_events:
-                        break
-                    events = self.storage.pull(self.configuration.flush_queue_size)
-                    if events:
-                        self.threads_pool.submit(self.send, events)
-                    else:
-                        wait_time = self.storage.wait_time / 1000
-                        if wait_time > 0:
-                            self.storage.lock.wait(wait_time)
-        with self.consumer_lock:
-            self.is_started = False
+        try:
+            if self.is_active:
+                with self.storage.lock:
+                    self.storage.lock.wait(self.configuration.flush_interval_millis / 1000)
+                    while True:
+                        if not self.storage.total_events:
+                            break
+                        events = self.storage.pull(self.configuration.flush_queue_size)
+                        if events:
+                            self.threads_pool.submit(self.send, events)
+                        else:
+                            wait_time = self.storage.wait_time / 1000
+                            if wait_time > 0:
+                                self.storage.lock.wait(wait_time)
+        except Exception:
+            self.configuration.logger.exception("Consumer thread error")
+        finally:
+            with self.consumer_lock:
+                self.is_started = False
