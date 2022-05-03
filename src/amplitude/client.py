@@ -75,7 +75,7 @@ class Amplitude:
             self.track(event)
 
     def group_identify(self, group_type: str, group_name: str, identify_obj: Identify,
-                       event_options: EventOptions,
+                       event_options: Optional[EventOptions] = None,
                        event_properties: Optional[dict] = None,
                        user_properties: Optional[dict] = None):
         """Send a group identify event to update group properties
@@ -84,11 +84,10 @@ class Amplitude:
             group_type (str): The group type e.g. "sport"
             group_name (str): The group name e.g. "soccer"
             identify_obj (amplitude.event.Identify): Identify object contain operations of updating group properties
-            event_options (amplitude.event.EventOptions): Provide additional information to group identify event
-                like user_id.
+            event_options (amplitude.event.EventOptions, optional): Provide additional information to
+                group identify event like user_id.
             event_properties (dict, optional): A dictionary of event properties. Defaults to None.
             user_properties (dict, optional): A dictionary of user properties. Defaults to None.
-
         """
         if not identify_obj.is_valid():
             self.configuration.logger.error("Empty group identify properties")

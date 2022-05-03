@@ -219,6 +219,8 @@ def verify_event(event):
     Returns:
         True is event is valid, False otherwise.
     """
+    if isinstance(event, GroupIdentifyEvent):
+        return True
     if (not isinstance(event, BaseEvent)) or \
             (not event["event_type"]) or \
             (not event["user_id"] and not event["device_id"]):
