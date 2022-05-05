@@ -52,7 +52,7 @@ class InMemoryStorage(Storage):
     @property
     def wait_time(self) -> int:
         if self.ready_queue:
-            return -1
+            return 0
         if self.buffer_data:
             return min(self.buffer_data[0][0] - utils.current_milliseconds(), self.configuration.flush_interval_millis)
         return self.configuration.flush_interval_millis
@@ -62,7 +62,7 @@ class InMemoryStorage(Storage):
         self.workers = workers
 
     def push(self, event: BaseEvent, delay: int = 0) -> Tuple[bool, Optional[str]]:
-        if event.retry and self.total_events > constants.MAX_BUFFER_CAPACITY:
+        if event.retry and self.total_events >= constants.MAX_BUFFER_CAPACITY:
             return False, "Destination buffer full. Retry temporarily disabled"
         if event.retry >= self.max_retry:
             return False, f"Event reached max retry times {self.max_retry}."

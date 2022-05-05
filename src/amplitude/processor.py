@@ -4,9 +4,9 @@ from amplitude.http_client import HttpStatus
 
 class ResponseProcessor:
 
-    def __init__(self, worker):
-        self.configuration = worker.configuration
-        self.storage = worker.storage
+    def __init__(self):
+        self.configuration = None
+        self.storage = None
 
     def setup(self, configuration, storage):
         self.configuration = configuration

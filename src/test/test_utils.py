@@ -1,6 +1,6 @@
 import unittest
 
-from amplitude import utils,constants
+from amplitude import utils, constants
 
 
 class AmplitudeUtilsTestCase(unittest.TestCase):
