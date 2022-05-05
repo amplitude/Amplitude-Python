@@ -3,7 +3,7 @@ from amplitude import Amplitude, BaseEvent
 # Create your views here.
 
 
-client = Amplitude("API KEY")
+client = Amplitude("YOUR API KEY")
 
 
 def track_event(request):

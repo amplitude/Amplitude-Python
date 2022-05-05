@@ -2,7 +2,7 @@ from flask import Flask
 from amplitude import Amplitude, BaseEvent
 
 app = Flask(__name__)
-client = Amplitude("API KEY")
+client = Amplitude("YOUR API KEY")
 
 @app.route("/")
 def amplitude_example_app():
