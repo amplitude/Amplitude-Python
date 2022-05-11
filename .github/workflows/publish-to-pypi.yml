@@ -44,8 +44,12 @@ jobs:
 
       - name: Publish distribution PyPI
         if: ${{ github.event.inputs.dryRun == 'false'}}
-        uses: relekang/python-semantic-release@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          repository_username: __token__
-          repository_password: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          python -m pip install python-semantic-release
+          git config user.name amplitude-sdk-bot
+          git config user.email amplitude-sdk-bot@users.noreply.github.com
+          semantic-release publish
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY_USERNAME: __token__
+          REPOSITORY_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
