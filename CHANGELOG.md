@@ -2,6 +2,14 @@
 
 <!--next-version-placeholder-->
 
+## v0.3.0 (2022-05-12)
+### Feature
+* Flask and django simple example ([#22](https://github.com/amplitude/Amplitude-Python/issues/22)) ([`c71b8e0`](https://github.com/amplitude/Amplitude-Python/commit/c71b8e0de36eafaa3af673af8ef35e4485107137))
+
+### Fix
+* Set correct fetch-depth for semantic release ([#25](https://github.com/amplitude/Amplitude-Python/issues/25)) ([`0514d40`](https://github.com/amplitude/Amplitude-Python/commit/0514d40665a1d52bec999301eeca609c28a9e9d6))
+* Broken release action ([#24](https://github.com/amplitude/Amplitude-Python/issues/24)) ([`8eb6e52`](https://github.com/amplitude/Amplitude-Python/commit/8eb6e5242d77a84d6516dce96e8b8411e6fc1247))
+
 ## v0.2.2 (2022-04-29)
 ### Fix
 * Use new thread instead of background blocking thread ([#20](https://github.com/amplitude/Amplitude-Python/issues/20)) ([`24f807f`](https://github.com/amplitude/Amplitude-Python/commit/24f807f3c9eb2806deb83c5545151ca034e3ce20))
