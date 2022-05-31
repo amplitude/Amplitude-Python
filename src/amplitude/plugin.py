@@ -187,6 +187,10 @@ class ContextPlugin(Plugin):
         """The constructor of ContextPlugin class"""
         super().__init__(constants.PluginType.BEFORE)
         self.context_string = f"{constants.SDK_LIBRARY}/{constants.SDK_VERSION}"
+        self.configuration = None
+
+    def setup(self, client):
+        self.configuration = client.configuration
 
     def apply_context_data(self, event: BaseEvent):
         """Add SDK name and version to event.library.
@@ -203,9 +207,11 @@ class ContextPlugin(Plugin):
             event (BaseEvent): The event to be processed.
         """
         if not event.time:
-            event.time = utils.current_milliseconds()
+            event["time"] = utils.current_milliseconds()
         if not event.insert_id:
-            event.insert_id = str(uuid.uuid4())
+            event["insert_id"] = str(uuid.uuid4())
+        if self.configuration.plan and (not event.plan):
+            event["plan"] = self.configuration.plan
         self.apply_context_data(event)
         return event
 
