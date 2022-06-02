@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import MagicMock
 
 from amplitude.plugin import AmplitudeDestinationPlugin, ContextPlugin, EventPlugin, DestinationPlugin
-from amplitude import Amplitude, PluginType, BaseEvent, RevenueEvent, IdentifyEvent, GroupIdentifyEvent, Config
+from amplitude import Amplitude, PluginType, BaseEvent, RevenueEvent, IdentifyEvent, GroupIdentifyEvent, Config, Plan
 
 
 class AmplitudePluginTestCase(unittest.TestCase):
@@ -25,14 +25,18 @@ class AmplitudePluginTestCase(unittest.TestCase):
 
     def test_plugin_context_plugin_execute_event_success(self):
         context_plugin = ContextPlugin()
+        context_plugin.setup(Amplitude("test_api_key"))
+        context_plugin.configuration.plan = Plan(source="test_source")
         event = BaseEvent("test_event", user_id="test_user")
         self.assertIsNone(event.time)
         self.assertIsNone(event.insert_id)
         self.assertIsNone(event.library)
+        self.assertIsNone(event.plan)
         context_plugin.execute(event)
         self.assertTrue(isinstance(event.time, int))
         self.assertTrue(isinstance(event.insert_id, str))
         self.assertTrue(isinstance(event.library, str))
+        self.assertTrue(isinstance(event.plan, Plan))
 
     def test_plugin_event_plugin_process_event_success(self):
         plugin = EventPlugin(PluginType.BEFORE)
@@ -50,6 +54,7 @@ class AmplitudePluginTestCase(unittest.TestCase):
         destination_plugin = DestinationPlugin()
         destination_plugin.timeline.configuration = Config()
         context_plugin = ContextPlugin()
+        context_plugin.configuration = destination_plugin.timeline.configuration
         event = BaseEvent("test_event", user_id="test_user")
         destination_plugin.add(context_plugin)
         destination_plugin.execute(event)

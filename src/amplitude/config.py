@@ -8,7 +8,7 @@ import logging
 from typing import Optional, Callable
 
 from amplitude import constants
-from amplitude.event import BaseEvent
+from amplitude.event import BaseEvent, Plan
 from amplitude.storage import InMemoryStorageProvider, StorageProvider, Storage
 
 
@@ -21,6 +21,7 @@ class Config:
             Must be positive.
         flush_interval_millis (int, optional): The events buffered in memory will wait no longer than
             flush_interval_millis. Must be positive.
+        flush_max_retries (int, optional): The maximum retry attempts for an event when receiving error response.
         logger (optional): The logger used by Amplitude client. Default to logging.getLogger(constants.LOGGER_NAME).
         min_id_length (int, optional): The minimum length of user_id and device_id for events. Default to 5.
         callback (callable, optional): The client level callback function. Triggered on every events sent or failed.
@@ -29,8 +30,9 @@ class Config:
         use_batch(bool, optional): True to use batch API endpoint, False to use HTTP V2 API endpoint. Default to False.
         server_url (str, optional): API endpoint url. Default to None. Auto selected by configured server_zone
             and use_batch if set to None. Support customized url by setting string value.
-        storage_provider(amplitude.storage.StorageProvider, optional): Default to InMemoryStorageProvider.
+        storage_provider (amplitude.storage.StorageProvider, optional): Default to InMemoryStorageProvider.
             Provide storage instance for events buffer.
+        plan (amplitude.event.Plan, optional): Tracking plan information. Default to None.
 
     Properties:
         options: A dictionary contains minimum id length information. None if min_id_length not set.
@@ -52,9 +54,10 @@ class Config:
                  server_zone: str = constants.DEFAULT_ZONE,
                  use_batch: bool = False,
                  server_url: Optional[str] = None,
-                 storage_provider: StorageProvider = InMemoryStorageProvider()):
+                 storage_provider: StorageProvider = InMemoryStorageProvider(),
+                 plan: Plan = None):
         """The constructor of Config class"""
-        self.api_key = api_key
+        self.api_key: str = api_key
         self._flush_queue_size: int = flush_queue_size
         self._flush_size_divider: int = 1
         self.flush_interval_millis: int = flush_interval_millis
@@ -66,7 +69,8 @@ class Config:
         self.use_batch: bool = use_batch
         self._url: Optional[str] = server_url
         self.storage_provider: StorageProvider = storage_provider
-        self.opt_out = False
+        self.opt_out: bool = False
+        self.plan: Plan = plan
 
     def get_storage(self) -> Storage:
         """Use configured StorageProvider to create a Storage instance then return.
