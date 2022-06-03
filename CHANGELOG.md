@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.4.0 (2022-06-03)
+### Feature
+* Add plan to config ([#26](https://github.com/amplitude/Amplitude-Python/issues/26)) ([`eb3edf9`](https://github.com/amplitude/Amplitude-Python/commit/eb3edf969a29e372da054fb44d2ea8cc89b09d42))
+
 ## v0.3.0 (2022-05-12)
 ### Feature
 * Flask and django simple example ([#22](https://github.com/amplitude/Amplitude-Python/issues/22)) ([`c71b8e0`](https://github.com/amplitude/Amplitude-Python/commit/c71b8e0de36eafaa3af673af8ef35e4485107137))
