@@ -4,7 +4,6 @@ Classes:
     Amplitude: the Amplitude client class
 """
 
-from cmath import log
 import logging
 from typing import Optional, Union, List
 
