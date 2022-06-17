@@ -3,7 +3,6 @@ from amplitude.http_client import HttpStatus
 
 
 class ResponseProcessor:
-
     def __init__(self):
         self.configuration = None
         self.storage = None
@@ -15,11 +14,13 @@ class ResponseProcessor:
     def process_response(self, res, events):
         if res.status == HttpStatus.SUCCESS:
             self.callback(events, res.code, "Event sent successfully.")
+            self.log(events, res.code, "Event sent successfully.")
         elif res.status == HttpStatus.TIMEOUT or res.status == HttpStatus.FAILED:
             self.push_to_storage(events, 0, res)
         elif res.status == HttpStatus.PAYLOAD_TOO_LARGE:
             if len(events) == 1:
                 self.callback(events, res.code, res.error)
+                self.log(events, res.code, res.error)
             else:
                 self.configuration._increase_flush_divider()
                 self.push_to_storage(events, 0, res)
@@ -28,6 +29,7 @@ class ResponseProcessor:
                 raise InvalidAPIKeyError(res.error)
             if res.missing_field:
                 self.callback(events, res.code, f"Request missing required field {res.missing_field}")
+                self.log(events, res.code, f"Request missing required field {res.missing_field}")
             else:
                 invalid_index_set = res.invalid_or_silenced_index()
                 events_for_retry = []
@@ -38,6 +40,7 @@ class ResponseProcessor:
                     else:
                         events_for_retry.append(event)
                 self.callback(events_for_callback, res.code, res.error)
+                self.log(events_for_callback, res.code, res.error)
                 self.push_to_storage(events_for_retry, 0, res)
         elif res.status == HttpStatus.TOO_MANY_REQUESTS:
             events_for_callback = []
@@ -56,6 +59,7 @@ class ResponseProcessor:
             self.push_to_storage(events_for_retry, 0, res)
         else:
             self.callback(events, res.code, res.error or "Unknown error")
+            self.log(events, res.code, res.error or "Unknown error")
 
     def push_to_storage(self, events, delay, res):
         for event in events:
@@ -63,6 +67,7 @@ class ResponseProcessor:
             success, message = self.storage.push(event, delay=delay)
             if not success:
                 self.callback([event], res.code, message)
+                self.log([event], res.code, message)
 
     def callback(self, events, code, message):
         for event in events:
@@ -72,3 +77,7 @@ class ResponseProcessor:
                 event.callback(code, message)
             except Exception:
                 self.configuration.logger.exception(f"Error callback for event {event}")
+    
+    def log(self, events, code, message):
+        for event in events:
+            self.configuration.logger.info(message, extra={'code':code, 'event':event})

@@ -39,7 +39,7 @@ class Workers:
     def flush(self):
         events = self.storage.pull_all()
         if events:
-            self.threads_pool.submit(self.send, events)
+            self.send(events)
 
     def send(self, events):
         url = self.configuration.server_url
