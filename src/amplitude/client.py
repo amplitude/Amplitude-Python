@@ -44,11 +44,6 @@ class Amplitude:
             configuration (amplitude.config.Config, optional): The configuration of client instance. A new instance
                 with default config value will be used by default.
         """
-        logging.basicConfig(filename="amplitude.log",
-                            filemode='a+',
-                            format='%(asctime)s - %(code)s - %(message)s - %(event)s',
-                            level=logging.INFO
-                            )
         self.configuration: Config = configuration
         self.configuration.api_key = api_key
         self.__timeline = Timeline()
