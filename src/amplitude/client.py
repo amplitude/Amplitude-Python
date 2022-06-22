@@ -4,7 +4,7 @@ Classes:
     Amplitude: the Amplitude client class
 """
 
-from typing import Optional, Union, List, Final
+from typing import Optional, Union, List
 
 from amplitude.config import Config
 from amplitude.event import Revenue, BaseEvent, Identify, IdentifyEvent, GroupIdentifyEvent, EventOptions
@@ -43,7 +43,7 @@ class Amplitude:
             configuration (amplitude.config.Config, optional): The configuration of client instance. A new instance
                 with default config value will be used by default.
         """
-        self.configuration: Final[Config] = configuration
+        self.configuration: Config = configuration
         self.configuration.api_key = api_key
         self.__timeline = Timeline()
         self.__timeline.setup(self)
