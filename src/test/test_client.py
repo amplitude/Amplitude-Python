@@ -182,11 +182,11 @@ class AmplitudeClientTestCase(unittest.TestCase):
         def callback_func(event, code, message=None):
             self.assertEqual(200, code)
             self.assertTrue(isinstance(event, IdentifyEvent))
-            self.assertTrue("user_properties" in event)
+            self.assertTrue("groups" in event)
             self.assertEqual("$identify", event["event_type"])
             self.assertEqual("test_user_id", event["user_id"])
             self.assertEqual("test_device_id", event["device_id"])
-            self.assertEqual({"$set": {"type": ["test_group", "test_group_2"]}}, event.user_properties)
+            self.assertEqual({"type": ["test_group", "test_group_2"]}, event.groups)
 
         self.client.configuration.callback = callback_func
         for use_batch in (True, False):
