@@ -4,7 +4,7 @@ Classes:
     Amplitude: the Amplitude client class
 """
 
-from typing import Optional, Union, List
+from typing import Optional, Union, List, Final
 
 from amplitude.config import Config
 from amplitude.event import Revenue, BaseEvent, Identify, IdentifyEvent, GroupIdentifyEvent, EventOptions
@@ -43,7 +43,7 @@ class Amplitude:
             configuration (amplitude.config.Config, optional): The configuration of client instance. A new instance
                 with default config value will be used by default.
         """
-        self.configuration: Config = configuration
+        self.configuration: Final[Config] = configuration
         self.configuration.api_key = api_key
         self.__timeline = Timeline()
         self.__timeline.setup(self)
@@ -125,9 +125,9 @@ class Amplitude:
             event_options (amplitude.event.EventOptions): Provide additional information for event
                 like user_id.
         """
-        identify_obj = Identify()
-        identify_obj.set(group_type, group_name)
-        self.identify(identify_obj, event_options)
+        event = IdentifyEvent(groups={group_type: group_name})
+        event.load_event_options(event_options)
+        self.track(event)
 
     def flush(self):
         """Flush all event waiting to be sent in the buffer"""
