@@ -43,7 +43,7 @@ class Timeline:
     def flush(self):
         for destination in self.plugins[PluginType.DESTINATION]:
             try:
-                destination.flush()
+                return destination.flush()
             except Exception:
                 self.logger.exception("Error for flush events")
 

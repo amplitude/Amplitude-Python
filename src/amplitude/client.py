@@ -132,7 +132,7 @@ class Amplitude:
 
     def flush(self):
         """Flush all event waiting to be sent in the buffer"""
-        self.__timeline.flush()
+        return self.__timeline.flush()
 
     def add(self, plugin: Plugin):
         """Add the plugin object to client instance. Events tracked by this client instance will be

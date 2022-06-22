@@ -75,7 +75,7 @@ class AmplitudeWorkersTestCase(unittest.TestCase):
         HttpClient.post = MagicMock()
         HttpClient.post.return_value = success_response
         self.push_event(self.get_events_list(50))
-        self.workers.flush()
+        self.workers.flush().result()
         self.assertEqual(50, len(self.events_dict[200]))
         HttpClient.post.assert_called()
 
@@ -109,7 +109,7 @@ class AmplitudeWorkersTestCase(unittest.TestCase):
         HttpClient.post = MagicMock()
         HttpClient.post.side_effect = [invalid_response, success_response]
         self.workers.send(events)
-        self.workers.flush()
+        self.workers.flush().result()
         self.assertEqual(self.events_dict[200], set(events[20:]))
         for i in range(20, 100):
             self.assertEqual(1, events[i].retry)
@@ -154,9 +154,9 @@ class AmplitudeWorkersTestCase(unittest.TestCase):
         self.workers.configuration.flush_queue_size = 30
         self.workers.send(events)
         self.assertEqual(15, self.workers.configuration.flush_queue_size)
-        self.workers.flush()
+        self.workers.flush().result()
         self.assertEqual(10, self.workers.configuration.flush_queue_size)
-        self.workers.flush()
+        self.workers.flush().result()
         self.assertEqual(30, len(self.events_dict[200]))
 
     def test_worker_send_events_with_timeout_and_failed_response_retry_all_events(self):
@@ -167,8 +167,8 @@ class AmplitudeWorkersTestCase(unittest.TestCase):
         HttpClient.post = MagicMock()
         HttpClient.post.side_effect = [timeout_response, failed_response, success_response]
         self.workers.send(events)
-        self.workers.flush()
-        self.workers.flush()
+        self.workers.flush().result()
+        self.workers.flush().result()
         self.assertEqual(100, len(self.events_dict[200]))
         self.assertEqual(3, HttpClient.post.call_count)
 
@@ -205,7 +205,7 @@ class AmplitudeWorkersTestCase(unittest.TestCase):
         while i > -15:
             self.assertEqual(events[16 + i], self.workers.storage.buffer_data[i][1])
             i -= 1
-        self.workers.flush()
+        self.workers.flush().result()
         self.assertEqual(self.events_dict[200], set(events[2:]))
 
     def test_worker_multithreading_process_events_with_random_response_success(self):

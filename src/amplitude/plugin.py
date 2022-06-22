@@ -165,7 +165,7 @@ class AmplitudeDestinationPlugin(DestinationPlugin):
 
     def flush(self):
         """Flush all event in storage instance."""
-        self.workers.flush()
+        return self.workers.flush()
 
     def shutdown(self):
         """Shutdown plugins and works of the destination plugin."""
