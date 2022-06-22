@@ -36,9 +36,9 @@ class AmplitudeClientTestCase(unittest.TestCase):
                 self.client.configuration.use_batch = use_batch
                 for i in range(25):
                     self.client.track(BaseEvent("test_event", "test_user_id", event_properties={"id": i}))
-                flush_future = self.client.flush()
-                if flush_future:
-                    flush_future.result()
+                for flush_future in self.client.flush():
+                    if flush_future:
+                        flush_future.result()
                 self.assertEqual(25, len(events))
                 post_method.assert_called()
 
@@ -55,7 +55,9 @@ class AmplitudeClientTestCase(unittest.TestCase):
                 with self.assertLogs("test", "ERROR") as cm:
                     self.client.configuration.logger = logging.getLogger("test")
                     self.client.track(BaseEvent("test_event", "test_user_id"))
-                    self.client.flush().result()                    
+                    for flush_future in self.client.flush():
+                        if flush_future:
+                            flush_future.result()
                     post_method.assert_called_once()
                     self.assertEqual(["ERROR:test:Invalid API Key"], cm.output)
 
@@ -129,7 +131,9 @@ class AmplitudeClientTestCase(unittest.TestCase):
                 self.assertTrue(identify_obj.is_valid())
                 self.assertEqual({"$set": {"birth_date": "4-1-2022"}}, identify_obj.user_properties)
                 self.client.identify(identify_obj, EventOptions(user_id="test_user_id", device_id="test_device_id"))
-                self.client.flush().result()
+                for flush_future in self.client.flush():
+                        if flush_future:
+                            flush_future.result()
                 post_method.assert_called_once()
 
     def test_amplitude_client_group_identify_invalid_log_error_then_success(self):
@@ -164,7 +168,9 @@ class AmplitudeClientTestCase(unittest.TestCase):
                 self.assertEqual({"$set": {"team_name": "Super Power"}}, identify_obj.user_properties)
                 self.client.group_identify("Sports", "Football", identify_obj,
                                            EventOptions(user_id="test_user_id", device_id="test_device_id"))
-                self.client.flush().result()
+                for flush_future in self.client.flush():
+                        if flush_future:
+                            flush_future.result()
                 post_method.assert_called_once()
 
     def test_amplitude_set_group_success(self):
@@ -189,7 +195,9 @@ class AmplitudeClientTestCase(unittest.TestCase):
                 self.client.configuration.use_batch = use_batch
                 self.client.set_group("type", ["test_group", "test_group_2"],
                                       EventOptions(user_id="test_user_id", device_id="test_device_id"))
-                self.client.flush().result()
+                for flush_future in self.client.flush():
+                        if flush_future:
+                            flush_future.result()
                 post_method.assert_called_once()
 
     def test_amplitude_client_revenue_invalid_log_error_then_success(self):
@@ -224,7 +232,9 @@ class AmplitudeClientTestCase(unittest.TestCase):
                 self.assertTrue(revenue_obj.is_valid())
                 revenue_obj.set_receipt("A0001", "0001A")
                 self.client.revenue(revenue_obj, EventOptions(user_id="test_user_id", device_id="test_device_id"))
-                self.client.flush().result()
+                for flush_future in self.client.flush():
+                        if flush_future:
+                            flush_future.result()
                 post_method.assert_called_once()
 
     def test_amplitude_client_flush_success(self):
@@ -246,9 +256,13 @@ class AmplitudeClientTestCase(unittest.TestCase):
                 self.client.configuration.use_batch = use_batch
                 self.client.track(BaseEvent(event_type="flush_test", user_id="test_user_id",
                                             device_id="test_device_id"))
-                self.client.flush().result()
+                for flush_future in self.client.flush():
+                        if flush_future:
+                            flush_future.result()
                 post_method.assert_called_once()
-                self.client.flush()
+                for flush_future in self.client.flush():
+                        if flush_future:
+                            flush_future.result()
                 post_method.assert_called_once()
 
     def test_amplitude_add_remove_plugins_success(self):

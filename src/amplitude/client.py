@@ -4,7 +4,6 @@ Classes:
     Amplitude: the Amplitude client class
 """
 
-import logging
 from typing import Optional, Union, List
 
 from amplitude.config import Config
@@ -131,7 +130,11 @@ class Amplitude:
         self.identify(identify_obj, event_options)
 
     def flush(self):
-        """Flush all event waiting to be sent in the buffer"""
+        """Flush all event waiting to be sent in the buffer
+
+        Returns:
+            A list of Future objects for all destination plugins
+        """
         return self.__timeline.flush()
 
     def add(self, plugin: Plugin):

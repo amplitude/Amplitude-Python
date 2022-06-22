@@ -41,11 +41,13 @@ class Timeline:
                 self.plugins[plugin_type] = [p for p in self.plugins[plugin_type] if p != plugin]
 
     def flush(self):
+        destination_futures = []
         for destination in self.plugins[PluginType.DESTINATION]:
             try:
-                return destination.flush()
+                destination_futures.append(destination.flush())
             except Exception:
                 self.logger.exception("Error for flush events")
+        return destination_futures
 
     def process(self, event):
         if self.configuration.opt_out:
