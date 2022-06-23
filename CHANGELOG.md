@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.4.1 (2022-06-23)
+### Fix
+* Get_event_body for enum value from ampli ([#29](https://github.com/amplitude/Amplitude-Python/issues/29)) ([`2bbc1b0`](https://github.com/amplitude/Amplitude-Python/commit/2bbc1b093d800641f846a02194fd3adb7d3bb31d))
+* Set_group put group_type/group_name in groups attribute ([#28](https://github.com/amplitude/Amplitude-Python/issues/28)) ([`828040e`](https://github.com/amplitude/Amplitude-Python/commit/828040e08e2ecc7b3ff240cc25dd58fba573e12a))
+* Add process logs & flush() returns future ([#27](https://github.com/amplitude/Amplitude-Python/issues/27)) ([`33d4c5c`](https://github.com/amplitude/Amplitude-Python/commit/33d4c5c08a8fb00af177e86f50db10af5dc239b6))
+
 ## v0.4.0 (2022-06-03)
 ### Feature
 * Add plan to config ([#26](https://github.com/amplitude/Amplitude-Python/issues/26)) ([`eb3edf9`](https://github.com/amplitude/Amplitude-Python/commit/eb3edf969a29e372da054fb44d2ea8cc89b09d42))
