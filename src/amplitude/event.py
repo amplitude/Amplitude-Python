@@ -12,6 +12,7 @@ Classes:
 """
 
 import copy
+import enum
 import json
 import logging
 from typing import Callable, Optional, Union
@@ -303,6 +304,11 @@ class EventOptions:
                 event_body[value[0]] = self[key]
         if "plan" in event_body:
             event_body["plan"] = event_body["plan"].get_plan_body()
+        for properties in ["user_properties", "event_properties", "group_properties"]:
+            if properties in event_body:
+                for key, value in event_body[properties].items():
+                    if isinstance(value, enum.Enum):
+                        event_body[properties][key] = value.value
         return utils.truncate(event_body)
 
     def _verify_property(self, key, value) -> bool:
@@ -1187,7 +1193,7 @@ def is_validate_properties(key, value):
         return result
     if isinstance(value, dict):
         return is_validate_object(value)
-    if not isinstance(value, (bool, float, int, str)):
+    if not isinstance(value, (bool, float, int, str, enum.Enum)):
         return False
     return True
 

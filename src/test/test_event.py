@@ -1,3 +1,4 @@
+import enum
 import unittest
 from unittest.mock import MagicMock
 
@@ -74,10 +75,15 @@ class AmplitudeEventTestCase(unittest.TestCase):
         callback_func.assert_not_called()
 
     def test_base_event_get_event_body_success(self):
-        event = BaseEvent(event_type="test_event", user_id="test_user", user_properties={"email": "test@test"})
+        class TestEnum(enum.Enum):
+            ENUM1 = 'test'
+            ENUM2 = 'test2'
+        event = BaseEvent(event_type="test_event", user_id="test_user", user_properties={"email": "test@test"},
+                          event_properties={'enum_properties': TestEnum.ENUM1})
         expect_dict = {"event_type": "test_event",
                        "user_id": "test_user",
-                       "user_properties": {"email": "test@test"}}
+                       "user_properties": {"email": "test@test"},
+                       "event_properties": {"enum_properties": 'test'}}
         self.assertEqual(expect_dict, event.get_event_body())
 
     def test_base_event_set_dict_event_attributes_with_invalid_value_failed(self):
