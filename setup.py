@@ -20,7 +20,7 @@ setup(
     author="Amplitude Inc.",
     author_email="sdk.dev@amplitude.com",
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         # Indicate who your project is intended for
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
