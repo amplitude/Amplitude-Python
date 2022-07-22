@@ -114,7 +114,8 @@ EVENT_KEY_MAPPING = {
     "library": ["library", str],
     "plan": ["plan", Plan],
     "group_properties": ["group_properties", dict],
-    "partner_id": ["partner_id", str]
+    "partner_id": ["partner_id", str],
+    "version_name": ["version_name", str]
 }
 
 
@@ -158,6 +159,7 @@ class EventOptions:
             we have already seen before within the past 7 days will be deduplicated.
         plan (Plan, optional): Tracking plan properties.
         partner_id (str, optional): The partner id.
+        version_name (str, optional): The version name.
         callback (callable, optional): Event level callback method. Triggered when event is sent or failed. Take three
             parameters: an event instance, an integer code of response status, an optional string message.
 
@@ -202,6 +204,7 @@ class EventOptions:
                  insert_id: Optional[str] = None,
                  plan: Optional[Plan] = None,
                  partner_id: Optional[str] = None,
+                 version_name: Optional[str] = None,
                  callback=None):
         """The constructor of EventOptions class"""
         self.user_id: Optional[str] = None
@@ -238,6 +241,7 @@ class EventOptions:
         self.library: Optional[str] = None
         self.plan: Optional[Plan] = None
         self.partner_id: Optional[str] = None
+        self.version_name: Optional[str] = None
         self["user_id"] = user_id
         self["device_id"] = device_id
         self["time"] = time
@@ -271,6 +275,7 @@ class EventOptions:
         self["insert_id"] = insert_id
         self["plan"] = plan
         self["partner_id"] = partner_id
+        self["version_name"] = version_name
         self.event_callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = callback
         self.__retry: int = 0
 

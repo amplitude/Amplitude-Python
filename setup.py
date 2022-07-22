@@ -39,6 +39,6 @@ setup(
     project_urls={
         "Bug Reports": "https://github.com/amplitude/Amplitude-Python/issues",
         "Source": "https://github.com/amplitude/Amplitude-Python",
-        "Developer Doc": "https://developers.amplitude.com/docs/python-beta"
+        "Developer Doc": "https://docs.developers.amplitude.com/data/sdks/python/"
     },
 )
