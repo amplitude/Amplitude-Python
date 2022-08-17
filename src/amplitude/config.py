@@ -33,6 +33,7 @@ class Config:
         storage_provider (amplitude.storage.StorageProvider, optional): Default to InMemoryStorageProvider.
             Provide storage instance for events buffer.
         plan (amplitude.event.Plan, optional): Tracking plan information. Default to None.
+        library_context (str, optional): Library context information. Default to None.
 
     Properties:
         options: A dictionary contains minimum id length information. None if min_id_length not set.
