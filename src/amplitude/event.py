@@ -112,6 +112,7 @@ EVENT_KEY_MAPPING = {
     "session_id": ["session_id", int],
     "insert_id": ["insert_id", str],
     "library": ["library", str],
+    "library_context": ["library_context", str],
     "plan": ["plan", Plan],
     "group_properties": ["group_properties", dict],
     "partner_id": ["partner_id", str],
@@ -239,6 +240,7 @@ class EventOptions:
         self.session_id: Optional[int] = None
         self.insert_id: Optional[str] = None
         self.library: Optional[str] = None
+        self.library_context: Optional[str] = None
         self.plan: Optional[Plan] = None
         self.partner_id: Optional[str] = None
         self.version_name: Optional[str] = None
