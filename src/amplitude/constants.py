@@ -9,8 +9,8 @@ BATCH = 'batch'
 HTTP_V2 = 'v2'
 SERVER_URL = {
     EU_ZONE: {
-        BATCH: "https://api.eu.amplitude.com/batch",
-        HTTP_V2: "https://api.eu.amplitude.com/2/httpapi"
+        BATCH: "https://api2.amplitude.com/batch",
+        HTTP_V2: "https://api2.amplitude.com/2/httpapi"
     },
     DEFAULT_ZONE: {
         BATCH: "http://localhost:8000",
