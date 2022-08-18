@@ -13,8 +13,8 @@ SERVER_URL = {
         HTTP_V2: "https://api.eu.amplitude.com/2/httpapi"
     },
     DEFAULT_ZONE: {
-        BATCH: "https://api2.amplitude.com/batch",
-        HTTP_V2: "https://api2.amplitude.com/2/httpapi"
+        BATCH: "http://localhost:8000",
+        HTTP_V2: "http://localhost:8000"
     }
 }
 LOGGER_NAME = "amplitude"
