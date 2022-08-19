@@ -24,18 +24,22 @@ class AmplitudePluginTestCase(unittest.TestCase):
         client.shutdown()
 
     def test_plugin_context_plugin_execute_event_success(self):
+        test_library_context = "test_library_context"
         context_plugin = ContextPlugin()
         context_plugin.setup(Amplitude("test_api_key"))
         context_plugin.configuration.plan = Plan(source="test_source")
+        context_plugin.configuration.library_context = test_library_context
         event = BaseEvent("test_event", user_id="test_user")
         self.assertIsNone(event.time)
         self.assertIsNone(event.insert_id)
         self.assertIsNone(event.library)
+        self.assertIsNone(event.library_context)
         self.assertIsNone(event.plan)
         context_plugin.execute(event)
         self.assertTrue(isinstance(event.time, int))
         self.assertTrue(isinstance(event.insert_id, str))
         self.assertTrue(isinstance(event.library, str))
+        self.assertEqual(event.library_context, test_library_context)
         self.assertTrue(isinstance(event.plan, Plan))
 
     def test_plugin_event_plugin_process_event_success(self):
@@ -61,12 +65,14 @@ class AmplitudePluginTestCase(unittest.TestCase):
         self.assertTrue(isinstance(event.time, int))
         self.assertTrue(isinstance(event.insert_id, str))
         self.assertTrue(isinstance(event.library, str))
+        self.assertIsNone(event.library_context)
         destination_plugin.remove(context_plugin)
         event = BaseEvent("test_event", user_id="test_user")
         destination_plugin.execute(event)
         self.assertIsNone(event.time)
         self.assertIsNone(event.insert_id)
         self.assertIsNone(event.library)
+        self.assertIsNone(event.library_context)
 
 
 if __name__ == '__main__':

@@ -178,15 +178,17 @@ class ContextPlugin(Plugin):
         Also set event default timestamp and insert_id if not set elsewhere.
 
     Methods:
-        apply_context_data(event): Add SDK name and version to event.library.
+        apply_context_data(event):
+            - Add SDK name and version to event.library.
         execute(event): Set event default timestamp and insert_id if not set elsewhere.
-            Add SDK name and version to event.library.
+            - Add SDK name and version to event.library.
+            - Add library context information to event.library_context.
     """
 
     def __init__(self):
         """The constructor of ContextPlugin class"""
         super().__init__(constants.PluginType.BEFORE)
-        self.context_string = f"{constants.SDK_LIBRARY}/{constants.SDK_VERSION}"
+        self.library = f"{constants.SDK_LIBRARY}/{constants.SDK_VERSION}"
         self.configuration = None
 
     def setup(self, client):
@@ -198,10 +200,10 @@ class ContextPlugin(Plugin):
         Args:
             event (BaseEvent): The event to be processed.
         """
-        event.library = self.context_string
+        event.library = self.library
 
     def execute(self, event: BaseEvent) -> BaseEvent:
-        """Set event default timestamp and insert_id if not set elsewhere. Add SDK name and version to event.library.
+        """Set event default timestamp and insert_id if not set elsewhere. Apply context data to event.
 
         Args:
             event (BaseEvent): The event to be processed.
@@ -212,6 +214,8 @@ class ContextPlugin(Plugin):
             event["insert_id"] = str(uuid.uuid4())
         if self.configuration.plan and (not event.plan):
             event["plan"] = self.configuration.plan
+        if self.configuration.library_context and (not event.library_context):
+            event["library_context"] = self.configuration.library_context
         self.apply_context_data(event)
         return event
 
