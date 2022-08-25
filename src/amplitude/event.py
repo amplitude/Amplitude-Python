@@ -112,7 +112,6 @@ EVENT_KEY_MAPPING = {
     "session_id": ["session_id", int],
     "insert_id": ["insert_id", str],
     "library": ["library", str],
-    "library_context": ["library_context", str],
     "plan": ["plan", Plan],
     "group_properties": ["group_properties", dict],
     "partner_id": ["partner_id", str],
@@ -158,7 +157,6 @@ class EventOptions:
         session_id (int, optional): The start timestamp of the session in milliseconds.
         insert_id (str, optional): A unique identifier for the event. Events sent with the same insert_id and device_id
             we have already seen before within the past 7 days will be deduplicated.
-        library_context (str, optional): Library context information, e.g., used by SDK library loader/wrapper.
         plan (Plan, optional): Tracking plan properties.
         partner_id (str, optional): The partner id.
         version_name (str, optional): The version name.
@@ -204,7 +202,6 @@ class EventOptions:
                  event_id: Optional[int] = None,
                  session_id: Optional[int] = None,
                  insert_id: Optional[str] = None,
-                 library_context: Optional[str] = None,
                  plan: Optional[Plan] = None,
                  partner_id: Optional[str] = None,
                  version_name: Optional[str] = None,
@@ -242,7 +239,6 @@ class EventOptions:
         self.session_id: Optional[int] = None
         self.insert_id: Optional[str] = None
         self.library: Optional[str] = None
-        self.library_context: Optional[str] = None
         self.plan: Optional[Plan] = None
         self.partner_id: Optional[str] = None
         self.version_name: Optional[str] = None
@@ -277,7 +273,6 @@ class EventOptions:
         self["event_id"] = event_id
         self["session_id"] = session_id
         self["insert_id"] = insert_id
-        self["library_context"] = library_context
         self["plan"] = plan
         self["partner_id"] = partner_id
         self["version_name"] = version_name
@@ -398,7 +393,6 @@ class BaseEvent(EventOptions):
         session_id (int, optional): The start timestamp of the session in milliseconds.
         insert_id (str, optional): A unique identifier for the event. Events sent with the same insert_id and device_id
             we have already seen before within the past 7 days will be deduplicated.
-        library_context (str, optional): Library context information, e.g., used by SDK library loader/wrapper.
         plan (Plan, optional): Tracking plan properties.
         partner_id (str, optional): The partner id.
         callback (callable, optional): Event level callback method. Triggered when event is sent or failed. Take three
@@ -444,7 +438,6 @@ class BaseEvent(EventOptions):
                  event_id: Optional[int] = None,
                  session_id: Optional[int] = None,
                  insert_id: Optional[str] = None,
-                 library_context: Optional[str] = None,
                  plan: Optional[Plan] = None,
                  partner_id: Optional[str] = None,
                  callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None):
@@ -480,7 +473,6 @@ class BaseEvent(EventOptions):
                          event_id=event_id,
                          session_id=session_id,
                          insert_id=insert_id,
-                         library_context=library_context,
                          plan=plan,
                          partner_id=partner_id,
                          callback=callback)
@@ -737,7 +729,6 @@ class GroupIdentifyEvent(BaseEvent):
         session_id (int, optional): The start timestamp of the session in milliseconds.
         insert_id (str, optional): A unique identifier for the event. Events sent with the same insert_id and device_id
             we have already seen before within the past 7 days will be deduplicated.
-        library_context (str, optional): Library context information, e.g., used by SDK library loader/wrapper.
         plan (Plan, optional): Tracking plan properties.
         partner_id (str, optional): The partner id.
         callback (callable, optional): Event level callback method. Triggered when event is sent or failed. Take three
@@ -780,7 +771,6 @@ class GroupIdentifyEvent(BaseEvent):
                  event_id: Optional[int] = None,
                  session_id: Optional[int] = None,
                  insert_id: Optional[str] = None,
-                 library_context: Optional[str] = None,
                  plan: Optional[Plan] = None,
                  partner_id: Optional[str] = None,
                  callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None,
@@ -821,7 +811,6 @@ class GroupIdentifyEvent(BaseEvent):
                          event_id=event_id,
                          session_id=session_id,
                          insert_id=insert_id,
-                         library_context=library_context,
                          plan=plan,
                          partner_id=partner_id,
                          callback=callback)
@@ -872,7 +861,6 @@ class IdentifyEvent(BaseEvent):
         session_id (int, optional): The start timestamp of the session in milliseconds.
         insert_id (str, optional): A unique identifier for the event. Events sent with the same insert_id and device_id
             we have already seen before within the past 7 days will be deduplicated.
-        library_context (str, optional): Library context information, e.g., used by SDK library loader/wrapper.
         plan (Plan, optional): Tracking plan properties.
         partner_id (str, optional): The partner id.
         callback (callable, optional): Event level callback method. Triggered when event is sent or failed. Take three
@@ -915,7 +903,6 @@ class IdentifyEvent(BaseEvent):
                  event_id: Optional[int] = None,
                  session_id: Optional[int] = None,
                  insert_id: Optional[str] = None,
-                 library_context: Optional[str] = None,
                  plan: Optional[Plan] = None,
                  partner_id: Optional[str] = None,
                  callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None,
@@ -955,7 +942,6 @@ class IdentifyEvent(BaseEvent):
                          event_id=event_id,
                          session_id=session_id,
                          insert_id=insert_id,
-                         library_context=library_context,
                          plan=plan,
                          partner_id=partner_id,
                          callback=callback)
@@ -1095,7 +1081,6 @@ class RevenueEvent(BaseEvent):
         session_id (int, optional): The start timestamp of the session in milliseconds.
         insert_id (str, optional): A unique identifier for the event. Events sent with the same insert_id and device_id
             we have already seen before within the past 7 days will be deduplicated.
-        library_context (str, optional): Library context information, e.g., used by SDK library loader/wrapper.
         plan (Plan, optional): Tracking plan properties.
         partner_id (str, optional): The partner id.
         callback (callable, optional): Event level callback method. Triggered when event is sent or failed. Take three
@@ -1138,7 +1123,6 @@ class RevenueEvent(BaseEvent):
                  event_id: Optional[int] = None,
                  session_id: Optional[int] = None,
                  insert_id: Optional[str] = None,
-                 library_context: Optional[str] = None,
                  plan: Optional[Plan] = None,
                  partner_id: Optional[str] = None,
                  callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None,
@@ -1179,7 +1163,6 @@ class RevenueEvent(BaseEvent):
                          event_id=event_id,
                          session_id=session_id,
                          insert_id=insert_id,
-                         library_context=library_context,
                          plan=plan,
                          partner_id=partner_id,
                          callback=callback)

@@ -51,20 +51,12 @@ class AmplitudeEventTestCase(unittest.TestCase):
                           "event_type": "test_event",
                           "plan": {"branch": "test_branch", "versionId": "v1.1"}}, event.get_event_body())
 
-    def test_base_event_set_library_context_attribute_success(self):
-        event = BaseEvent("test_event", user_id="test_user")
-        event["library_context"] = "test_library_context/1.x"
-        self.assertEqual({"user_id": "test_user",
-                          "event_type": "test_event",
-                          "library_context": "test_library_context/1.x"}, event.get_event_body())
-
     def test_base_event_load_event_options_update_attributes_value(self):
         event = BaseEvent(event_type="test_event", event_properties={"properties1": "test"}, time=0)
-        event_options = EventOptions(user_id="test_user", device_id="test_device", library_context="test_library_context/1.x", time=10)
+        event_options = EventOptions(user_id="test_user", device_id="test_device", time=10)
         event.load_event_options(event_options)
         expect_event_body = {"user_id": "test_user",
                              "device_id": "test_device",
-                             "library_context": "test_library_context/1.x",
                              "time": 10,
                              "event_type": "test_event",
                              "event_properties": {"properties1": "test"}}

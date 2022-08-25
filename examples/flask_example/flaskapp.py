@@ -48,7 +48,7 @@ def track_revenue(user_id):
 @app.route("/flush")
 def flush_event():
     amp_client.flush()
-    return "<p>All events flushed</p>"
+    return f"<p>All events flushed</p>"
 
 
 if __name__ == "__main__":
