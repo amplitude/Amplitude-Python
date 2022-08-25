@@ -33,7 +33,6 @@ class Config:
         storage_provider (amplitude.storage.StorageProvider, optional): Default to InMemoryStorageProvider.
             Provide storage instance for events buffer.
         plan (amplitude.event.Plan, optional): Tracking plan information. Default to None.
-        library_context (str, optional): Library context information. Default to None.
 
     Properties:
         options: A dictionary contains minimum id length information. None if min_id_length not set.
@@ -56,8 +55,7 @@ class Config:
                  use_batch: bool = False,
                  server_url: Optional[str] = None,
                  storage_provider: StorageProvider = InMemoryStorageProvider(),
-                 plan: Plan = None,
-                 library_context: str = None):
+                 plan: Plan = None):
         """The constructor of Config class"""
         self.api_key: str = api_key
         self._flush_queue_size: int = flush_queue_size
@@ -73,7 +71,6 @@ class Config:
         self.storage_provider: StorageProvider = storage_provider
         self.opt_out: bool = False
         self.plan: Plan = plan
-        self.library_context: str = library_context
 
     def get_storage(self) -> Storage:
         """Use configured StorageProvider to create a Storage instance then return.
