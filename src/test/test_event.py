@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import MagicMock
 
 from amplitude import EventOptions, BaseEvent, Identify, IdentifyEvent, GroupIdentifyEvent, Revenue, RevenueEvent, \
-    Plan, constants
+    Plan, IngestionMetadata, constants
 
 
 class AmplitudeEventTestCase(unittest.TestCase):
@@ -51,13 +51,26 @@ class AmplitudeEventTestCase(unittest.TestCase):
                           "event_type": "test_event",
                           "plan": {"branch": "test_branch", "versionId": "v1.1"}}, event.get_event_body())
 
+    def test_base_event_set_ingestion_metadata_attribute_success(self):
+        event = BaseEvent("test_event", user_id="test_user")
+        event["ingestion_metadata"] = IngestionMetadata(source_name="test_source", source_version="test_version")
+        self.assertEqual({"user_id": "test_user",
+                          "event_type": "test_event",
+                          "ingestion_metadata": {"source_name": "test_source", "source_version": "test_version"}}, event.get_event_body())
+
     def test_base_event_load_event_options_update_attributes_value(self):
         event = BaseEvent(event_type="test_event", event_properties={"properties1": "test"}, time=0)
-        event_options = EventOptions(user_id="test_user", device_id="test_device", time=10)
+        event_options = EventOptions(
+            user_id="test_user",
+            device_id="test_device",
+            time=10,
+            ingestion_metadata=IngestionMetadata(source_name="test_source", source_version="test_version")
+        )
         event.load_event_options(event_options)
         expect_event_body = {"user_id": "test_user",
                              "device_id": "test_device",
                              "time": 10,
+                             "ingestion_metadata": {"source_name": "test_source", "source_version": "test_version"},
                              "event_type": "test_event",
                              "event_properties": {"properties1": "test"}}
         self.assertEqual(expect_event_body, event.get_event_body())
@@ -356,6 +369,34 @@ class AmplitudeEventTestCase(unittest.TestCase):
         event = BaseEvent("test_event", plan=plan)
         self.assertTrue("plan" in event)
         self.assertEqual({"event_type": "test_event", "plan": expect_plan}, event.get_event_body())
+
+    def test_ingestion_metadata_initialize_with_wrong_type_error_log_with_get_body(self):
+        ingestion_metadata = IngestionMetadata(source_name="test_source", source_version=1)
+        expected = {"source_name": "test_source", "source_version": "1"}
+        with self.assertLogs(None, "ERROR") as cm:
+            ingestion_metadata_dict = ingestion_metadata.get_body()
+            self.assertTrue(isinstance(ingestion_metadata_dict, dict))
+            self.assertFalse("source_version" in ingestion_metadata_dict)
+            self.assertNotEqual(expected, ingestion_metadata_dict)
+            self.assertEqual(["ERROR:amplitude:IngestionMetadata.source_version expected <class 'str'> but received <class 'int'>."],
+                             cm.output)
+
+    def test_ingestion_metadata_initialize_with_none_value_equal_to_expect_body(self):
+        ingestion_metadata = IngestionMetadata(source_name="test_source", source_version=None)
+        expected = {"source_name": "test_source"}
+        self.assertEqual(expected, ingestion_metadata.get_body())
+
+    def test_ingestion_metadata_initialize_with_all_value_equal_to_expect_body(self):
+        ingestion_metadata = IngestionMetadata(source_name="test_source", source_version="test_version")
+        expected = {"source_name": "test_source", "source_version": "test_version"}
+        self.assertEqual(expected, ingestion_metadata.get_body())
+
+    def test_event_with_ingestion_metadata_equal_to_expect_event_body(self):
+        ingestion_metadata = IngestionMetadata(source_name="test_source", source_version="test_version")
+        expected = {"source_name": "test_source", "source_version": "test_version"}
+        event = BaseEvent("test_event", ingestion_metadata=ingestion_metadata)
+        self.assertTrue("ingestion_metadata" in event)
+        self.assertEqual({"event_type": "test_event", "ingestion_metadata": expected}, event.get_event_body())
 
 
 if __name__ == '__main__':

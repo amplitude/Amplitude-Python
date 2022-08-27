@@ -5,10 +5,11 @@ Classes:
     BaseEvent: Basic event class. Subclass of EventOptions.
     Identify: A class used to create identify and group identify event.
     IdentifyEvent: A special event class. Used to update user properties without an actual event.
-    GroupIdentifyEvent: A special event class. Used to update group properties without an actual event
+    GroupIdentifyEvent: A special event class. Used to update group properties without an actual event.
     Revenue: A class used to create revenue event.
     RevenueEvent: A special event class. Used to record revenue information.
     Plan: Tracking plan info includes branch, source, version, version_id.
+    IngestionMetadata: Ingestion metadata includes source name, source version.
 """
 
 import copy
@@ -71,7 +72,52 @@ class Plan:
                 result[PLAN_KEY_MAPPING[key][0]] = self.__dict__[key]
             else:
                 logger.error(
-                    f"Plan.{key} expected {PLAN_KEY_MAPPING[key][1]} but received {type(self.__dict__[key])}.")
+                    f"{type(self).__name__}.{key} expected {PLAN_KEY_MAPPING[key][1]} but received {type(self.__dict__[key])}.")
+        return result
+
+
+INGESTION_METADATA_KEY_MAPPING = {
+    "source_name": ["source_name", str],
+    "source_version": ["source_version", str],
+}
+
+
+class IngestionMetadata:
+    """IngestionMetadata holds metadata information. Instance of IngestionMetadata class can be value of event's `ingestion_metadata` attribute.
+
+    Args:
+        source_name (str, optional): Name of the ingestion source in metadata.
+        source_version (str, optional): Version of the ingestion source in metadata.
+
+    Methods:
+        get_body(): return a dict object that contains ingestion metadata information.
+    """
+
+    def __init__(self, source_name: Optional[str] = None, source_version: Optional[str] = None):
+        """The constructor for the IngestionMetadata class
+
+        Args:
+            source_name (str, optional): Name of the ingestion source in metadata.
+            source_version (str, optional): Version of the ingestion source in metadata.
+        """
+        self.source_name: Optional[str] = source_name
+        self.source_version: Optional[str] = source_version
+
+    def get_body(self):
+        """Convert this object instance to dict instance
+
+        Returns:
+          A dictionary with data of this object instance
+        """
+        result = {}
+        for key in INGESTION_METADATA_KEY_MAPPING:
+            if not self.__dict__[key]:
+                continue
+            if isinstance(self.__dict__[key], INGESTION_METADATA_KEY_MAPPING[key][1]):
+                result[INGESTION_METADATA_KEY_MAPPING[key][0]] = self.__dict__[key]
+            else:
+                logger.error(
+                    f"{type(self).__name__}.{key} expected {INGESTION_METADATA_KEY_MAPPING[key][1]} but received {type(self.__dict__[key])}.")
         return result
 
 
@@ -113,6 +159,7 @@ EVENT_KEY_MAPPING = {
     "insert_id": ["insert_id", str],
     "library": ["library", str],
     "plan": ["plan", Plan],
+    "ingestion_metadata": ["ingestion_metadata", IngestionMetadata],
     "group_properties": ["group_properties", dict],
     "partner_id": ["partner_id", str],
     "version_name": ["version_name", str]
@@ -158,6 +205,7 @@ class EventOptions:
         insert_id (str, optional): A unique identifier for the event. Events sent with the same insert_id and device_id
             we have already seen before within the past 7 days will be deduplicated.
         plan (Plan, optional): Tracking plan properties.
+        ingestion_metadata (IngestionMetadata, optional): Ingestion metadata.
         partner_id (str, optional): The partner id.
         version_name (str, optional): The version name.
         callback (callable, optional): Event level callback method. Triggered when event is sent or failed. Take three
@@ -167,7 +215,7 @@ class EventOptions:
         retry (int): The retry attempt of the event instance.
 
     Methods:
-        get_event_body(): Retrun a dictionary with data of the event instance
+        get_event_body(): Return a dictionary with data of the event instance
         callback(code, message): Trigger callback method of the event instance.
     """
 
@@ -203,6 +251,7 @@ class EventOptions:
                  session_id: Optional[int] = None,
                  insert_id: Optional[str] = None,
                  plan: Optional[Plan] = None,
+                 ingestion_metadata: Optional[IngestionMetadata] = None,
                  partner_id: Optional[str] = None,
                  version_name: Optional[str] = None,
                  callback=None):
@@ -240,6 +289,7 @@ class EventOptions:
         self.insert_id: Optional[str] = None
         self.library: Optional[str] = None
         self.plan: Optional[Plan] = None
+        self.ingestion_metadata: Optional[IngestionMetadata] = None
         self.partner_id: Optional[str] = None
         self.version_name: Optional[str] = None
         self["user_id"] = user_id
@@ -274,6 +324,7 @@ class EventOptions:
         self["session_id"] = session_id
         self["insert_id"] = insert_id
         self["plan"] = plan
+        self["ingestion_metadata"] = ingestion_metadata
         self["partner_id"] = partner_id
         self["version_name"] = version_name
         self.event_callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = callback
@@ -309,6 +360,8 @@ class EventOptions:
                 event_body[value[0]] = self[key]
         if "plan" in event_body:
             event_body["plan"] = event_body["plan"].get_plan_body()
+        if "ingestion_metadata" in event_body:
+            event_body["ingestion_metadata"] = event_body["ingestion_metadata"].get_body()
         for properties in ["user_properties", "event_properties", "group_properties"]:
             if properties in event_body:
                 for key, value in event_body[properties].items():
@@ -394,6 +447,7 @@ class BaseEvent(EventOptions):
         insert_id (str, optional): A unique identifier for the event. Events sent with the same insert_id and device_id
             we have already seen before within the past 7 days will be deduplicated.
         plan (Plan, optional): Tracking plan properties.
+        ingestion_metadata (IngestionMetadata, optional): Ingestion metadata.
         partner_id (str, optional): The partner id.
         callback (callable, optional): Event level callback method. Triggered when event is sent or failed. Take three
             parameters: an event instance, an integer code of response status, an optional string message.
@@ -439,6 +493,7 @@ class BaseEvent(EventOptions):
                  session_id: Optional[int] = None,
                  insert_id: Optional[str] = None,
                  plan: Optional[Plan] = None,
+                 ingestion_metadata: Optional[IngestionMetadata] = None,
                  partner_id: Optional[str] = None,
                  callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None):
         """The constructor of the BaseEvent class"""
@@ -474,6 +529,7 @@ class BaseEvent(EventOptions):
                          session_id=session_id,
                          insert_id=insert_id,
                          plan=plan,
+                         ingestion_metadata=ingestion_metadata,
                          partner_id=partner_id,
                          callback=callback)
         self.event_type: str = event_type
@@ -730,6 +786,7 @@ class GroupIdentifyEvent(BaseEvent):
         insert_id (str, optional): A unique identifier for the event. Events sent with the same insert_id and device_id
             we have already seen before within the past 7 days will be deduplicated.
         plan (Plan, optional): Tracking plan properties.
+        ingestion_metadata (IngestionMetadata, optional): Ingestion metadata.
         partner_id (str, optional): The partner id.
         callback (callable, optional): Event level callback method. Triggered when event is sent or failed. Take three
             parameters: an event instance, an integer code of response status, an optional string message.
@@ -772,6 +829,7 @@ class GroupIdentifyEvent(BaseEvent):
                  session_id: Optional[int] = None,
                  insert_id: Optional[str] = None,
                  plan: Optional[Plan] = None,
+                 ingestion_metadata: Optional[IngestionMetadata] = None,
                  partner_id: Optional[str] = None,
                  callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None,
                  identify_obj: Optional[Identify] = None):
@@ -812,6 +870,7 @@ class GroupIdentifyEvent(BaseEvent):
                          session_id=session_id,
                          insert_id=insert_id,
                          plan=plan,
+                         ingestion_metadata=ingestion_metadata,
                          partner_id=partner_id,
                          callback=callback)
         if identify_obj:
@@ -862,6 +921,7 @@ class IdentifyEvent(BaseEvent):
         insert_id (str, optional): A unique identifier for the event. Events sent with the same insert_id and device_id
             we have already seen before within the past 7 days will be deduplicated.
         plan (Plan, optional): Tracking plan properties.
+        ingestion_metadata (IngestionMetadata, optional): Ingestion metadata.
         partner_id (str, optional): The partner id.
         callback (callable, optional): Event level callback method. Triggered when event is sent or failed. Take three
             parameters: an event instance, an integer code of response status, an optional string message.
@@ -904,6 +964,7 @@ class IdentifyEvent(BaseEvent):
                  session_id: Optional[int] = None,
                  insert_id: Optional[str] = None,
                  plan: Optional[Plan] = None,
+                 ingestion_metadata: Optional[IngestionMetadata] = None,
                  partner_id: Optional[str] = None,
                  callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None,
                  identify_obj: Optional[Identify] = None):
@@ -943,6 +1004,7 @@ class IdentifyEvent(BaseEvent):
                          session_id=session_id,
                          insert_id=insert_id,
                          plan=plan,
+                         ingestion_metadata=ingestion_metadata,
                          partner_id=partner_id,
                          callback=callback)
         if identify_obj:
@@ -1082,6 +1144,7 @@ class RevenueEvent(BaseEvent):
         insert_id (str, optional): A unique identifier for the event. Events sent with the same insert_id and device_id
             we have already seen before within the past 7 days will be deduplicated.
         plan (Plan, optional): Tracking plan properties.
+        ingestion_metadata (IngestionMetadata, optional): Ingestion metadata.
         partner_id (str, optional): The partner id.
         callback (callable, optional): Event level callback method. Triggered when event is sent or failed. Take three
             parameters: an event instance, an integer code of response status, an optional string message.
@@ -1124,6 +1187,7 @@ class RevenueEvent(BaseEvent):
                  session_id: Optional[int] = None,
                  insert_id: Optional[str] = None,
                  plan: Optional[Plan] = None,
+                 ingestion_metadata: Optional[IngestionMetadata] = None,
                  partner_id: Optional[str] = None,
                  callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None,
                  revenue_obj: Optional[Revenue] = None):
@@ -1164,6 +1228,7 @@ class RevenueEvent(BaseEvent):
                          session_id=session_id,
                          insert_id=insert_id,
                          plan=plan,
+                         ingestion_metadata=ingestion_metadata,
                          partner_id=partner_id,
                          callback=callback)
         if revenue_obj:

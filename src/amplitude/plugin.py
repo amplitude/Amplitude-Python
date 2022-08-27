@@ -179,8 +179,10 @@ class ContextPlugin(Plugin):
 
     Methods:
         apply_context_data(event): Add SDK name and version to event.library.
-        execute(event): Set event default timestamp and insert_id if not set elsewhere.
-            Add SDK name and version to event.library.
+        execute(event):
+            - Set event default timestamp and insert_id if not set elsewhere.
+            - Add SDK name and version to event.library.
+            - Mount plan, ingestion_metadata if not yet.
     """
 
     def __init__(self):
@@ -201,7 +203,10 @@ class ContextPlugin(Plugin):
         event.library = self.context_string
 
     def execute(self, event: BaseEvent) -> BaseEvent:
-        """Set event default timestamp and insert_id if not set elsewhere. Add SDK name and version to event.library.
+        """
+        - Set event default timestamp and insert_id if not set elsewhere.
+        - Add SDK name and version to event.library.
+        - Mount plan, ingestion_metadata if not yet.
 
         Args:
             event (BaseEvent): The event to be processed.
@@ -212,6 +217,8 @@ class ContextPlugin(Plugin):
             event["insert_id"] = str(uuid.uuid4())
         if self.configuration.plan and (not event.plan):
             event["plan"] = self.configuration.plan
+        if self.configuration.ingestion_metadata and (not event.ingestion_metadata):
+            event["ingestion_metadata"] = self.configuration.ingestion_metadata
         self.apply_context_data(event)
         return event
 
