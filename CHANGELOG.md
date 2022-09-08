@@ -2,6 +2,18 @@
 
 <!--next-version-placeholder-->
 
+## v1.1.0 (2022-09-08)
+### Feature
+* Add ingestion_metadata field ([#36](https://github.com/amplitude/Amplitude-Python/issues/36)) ([`a74a943`](https://github.com/amplitude/Amplitude-Python/commit/a74a943caab46e51a63c2933ce680aa9a345e7d9))
+* Add library context identifier ([#33](https://github.com/amplitude/Amplitude-Python/issues/33)) ([`d1c8f52`](https://github.com/amplitude/Amplitude-Python/commit/d1c8f52c595361d59cb9f0cfaa3cb13afb75ee30))
+* Add version_name to EventOptions ([#31](https://github.com/amplitude/Amplitude-Python/issues/31)) ([`5f9f098`](https://github.com/amplitude/Amplitude-Python/commit/5f9f098f08cd5293ceb896e17435fc5249129adf))
+
+### Fix
+* Update pyproject to use tag version to fix release workflow ([#37](https://github.com/amplitude/Amplitude-Python/issues/37)) ([`885fd5b`](https://github.com/amplitude/Amplitude-Python/commit/885fd5bc13d97ba1098ae175321409a440eadd23))
+
+### Documentation
+* Update Ampli Python url ([#34](https://github.com/amplitude/Amplitude-Python/issues/34)) ([`45d2a67`](https://github.com/amplitude/Amplitude-Python/commit/45d2a67ecb588a82f807686ace02c24be04c6bd2))
+
 ## v0.4.1 (2022-06-23)
 ### Fix
 * Get_event_body for enum value from ampli ([#29](https://github.com/amplitude/Amplitude-Python/issues/29)) ([`2bbc1b0`](https://github.com/amplitude/Amplitude-Python/commit/2bbc1b093d800641f846a02194fd3adb7d3bb31d))
