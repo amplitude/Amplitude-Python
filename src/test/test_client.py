@@ -15,7 +15,7 @@ class AmplitudeClientTestCase(unittest.TestCase):
                                 configuration=Config(flush_queue_size=10, flush_interval_millis=500))
 
     def tearDown(self) -> None:
-        self.client.shutdown()
+        self.client.shutdown(100)
 
     def test_amplitude_client_track_success(self):
         post_method = MagicMock()
