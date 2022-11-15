@@ -3,7 +3,7 @@
 Classes:
     Amplitude: the Amplitude client class
 """
-
+import time
 from typing import Optional, Union, List
 
 from amplitude.config import Config
@@ -163,7 +163,9 @@ class Amplitude:
         self.__timeline.remove(plugin)
         return self
 
-    def shutdown(self):
+    def shutdown(self, grace_time_milliseconds=0):
         """Shutdown the client instance, not accepting new events, flush all events in buffer"""
         self.configuration.opt_out = True
         self.__timeline.shutdown()
+        if grace_time_milliseconds > 0:
+            time.sleep(grace_time_milliseconds / 1000)
