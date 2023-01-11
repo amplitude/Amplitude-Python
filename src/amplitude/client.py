@@ -10,6 +10,8 @@ from amplitude.config import Config
 from amplitude.event import Revenue, BaseEvent, Identify, IdentifyEvent, GroupIdentifyEvent, EventOptions
 from amplitude.plugin import AmplitudeDestinationPlugin, ContextPlugin, Plugin
 from amplitude.timeline import Timeline
+import atexit
+import threading
 
 
 class Amplitude:
@@ -47,6 +49,7 @@ class Amplitude:
         self.configuration.api_key = api_key
         self.__timeline = Timeline()
         self.__timeline.setup(self)
+        self._register_on_exit()
         self.add(AmplitudeDestinationPlugin())
         self.add(ContextPlugin())
 
@@ -167,3 +170,13 @@ class Amplitude:
         """Shutdown the client instance, not accepting new events, flush all events in buffer"""
         self.configuration.opt_out = True
         self.__timeline.shutdown()
+
+    def _register_on_exit(self):
+        """Internal method to clean up the client instance on main thread exit"""
+        if hasattr(threading, "_register_atexit"):
+            try:
+                threading._register_atexit(self.shutdown)
+            except Exception as e:
+                self.configuration.logger.warning("register for exit fail")
+        else:
+            atexit.register(self.shutdown)
