@@ -174,6 +174,9 @@ class Amplitude:
     def _register_on_exit(self):
         """Internal method to clean up the client instance on main thread exit"""
         if hasattr(threading, "_register_atexit"):
-            threading._register_atexit(self.shutdown)
+            try:
+                threading._register_atexit(self.shutdown)
+            except Exception as e:
+                self.configuration.logger.warning("register for exit fail")
         else:
             atexit.register(self.shutdown)
