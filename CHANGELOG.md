@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.1.1 (2023-01-11)
+### Fix
+* Try fix script cleanup ([#43](https://github.com/amplitude/Amplitude-Python/issues/43)) ([`8c2f0b7`](https://github.com/amplitude/Amplitude-Python/commit/8c2f0b7c1b3f9bdf321b8ca0c1ac6ed5f62e5865))
+
 ## v1.1.0 (2022-09-08)
 ### Feature
 * Add ingestion_metadata field ([#36](https://github.com/amplitude/Amplitude-Python/issues/36)) ([`a74a943`](https://github.com/amplitude/Amplitude-Python/commit/a74a943caab46e51a63c2933ce680aa9a345e7d9))
