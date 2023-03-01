@@ -153,6 +153,14 @@ class AmplitudeEventTestCase(unittest.TestCase):
         expect_dict["event_properties"] = {"bool_properties": bool_properties}
         self.assertEqual(expect_dict, event.get_event_body())
 
+    def test_base_event_set_none_in_dict_attributes_success(self):
+        event = BaseEvent(event_type="test_event", user_id="test_user")
+        expect_dict = {"event_type": "test_event", "user_id": "test_user"}
+        none_properties = None
+        event["event_properties"] = {"none_properties": none_properties}
+        expect_dict["event_properties"] = {"none_properties": none_properties}
+        self.assertEqual(expect_dict, event.get_event_body())
+
     def test_base_event_set_numeric_in_dict_attributes_success(self):
         event = BaseEvent(event_type="test_event", user_id="test_user")
         expect_dict = {"event_type": "test_event", "user_id": "test_user"}
