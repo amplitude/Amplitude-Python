@@ -55,7 +55,7 @@ class Config:
                  server_zone: str = constants.DEFAULT_ZONE,
                  use_batch: bool = False,
                  server_url: Optional[str] = None,
-                 storage_provider: StorageProvider = InMemoryStorageProvider(),
+                 storage_provider: Optional[StorageProvider] = None,
                  plan: Plan = None,
                  ingestion_metadata: IngestionMetadata = None):
         """The constructor of Config class"""
@@ -70,7 +70,7 @@ class Config:
         self.server_zone: str = server_zone
         self.use_batch: bool = use_batch
         self._url: Optional[str] = server_url
-        self.storage_provider: StorageProvider = storage_provider
+        self.storage_provider: StorageProvider = storage_provider or InMemoryStorageProvider()
         self.opt_out: bool = False
         self.plan: Plan = plan
         self.ingestion_metadata: IngestionMetadata = ingestion_metadata

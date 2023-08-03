@@ -37,7 +37,7 @@ class Amplitude:
         shutdown(): Shutdown the client instance
     """
 
-    def __init__(self, api_key: str, configuration: Config = Config()):
+    def __init__(self, api_key: str, configuration: Optional[Config] = None):
         """The constructor for the Amplitude class
 
         Args:
@@ -45,7 +45,7 @@ class Amplitude:
             configuration (amplitude.config.Config, optional): The configuration of client instance. A new instance
                 with default config value will be used by default.
         """
-        self.configuration: Config = configuration
+        self.configuration: Config = configuration or Config()
         self.configuration.api_key = api_key
         self.__timeline = Timeline()
         self.__timeline.setup(self)

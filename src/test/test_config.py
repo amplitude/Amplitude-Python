@@ -120,7 +120,11 @@ class AmplitudeConfigTestCase(unittest.TestCase):
         self.assertEqual(1, config.flush_queue_size)
         config._increase_flush_divider()
         self.assertEqual(1, config.flush_queue_size)
-
+    
+    def test_config_multiple_instances_has_different_storage_provider(self):
+        config1 = Config()
+        config2 = Config()
+        self.assertIsNot(config1.storage_provider, config2.storage_provider)
 
 if __name__ == '__main__':
     unittest.main()

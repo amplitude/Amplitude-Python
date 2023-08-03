@@ -16,6 +16,13 @@ class AmplitudeClientTestCase(unittest.TestCase):
 
     def tearDown(self) -> None:
         self.client.shutdown()
+    
+    def test_amplitude_client_init_multiple_instance(self):
+        #  test multiple instance inited with different API keys
+        client1 = Amplitude(api_key="test api key 1")
+        client2 = Amplitude(api_key="test api key 2")
+        self.assertNotEqual(client1.configuration.api_key, client2.configuration.api_key)
+        self.assertNotEqual(client1.configuration.storage_provider, client2.configuration.storage_provider)
 
     def test_amplitude_client_track_success(self):
         post_method = MagicMock()
