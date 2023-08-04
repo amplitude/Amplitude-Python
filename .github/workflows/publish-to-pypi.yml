@@ -41,13 +41,13 @@ jobs:
       - name: Publish distribution PyPI --dry-run
         if: ${{ github.event.inputs.dryRun == 'true'}}
         run: |
-          python -m pip install python-semantic-release
+          python -m pip install python-semantic-release~=7.0.0
           semantic-release publish --noop
 
       - name: Publish distribution PyPI
         if: ${{ github.event.inputs.dryRun == 'false'}}
         run: |
-          python -m pip install python-semantic-release
+          python -m pip install python-semantic-release~=7.0.0
           git config user.name amplitude-sdk-bot
           git config user.email amplitude-sdk-bot@users.noreply.github.com
           semantic-release publish
