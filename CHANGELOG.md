@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.1.2 (2023-08-04)
+### Fix
+* Mutable defaults in init ([#48](https://github.com/amplitude/Amplitude-Python/issues/48)) ([`958e394`](https://github.com/amplitude/Amplitude-Python/commit/958e394242e1b0bd9b988a782e611254e496d6e6))
+
 ## v1.1.1 (2023-01-11)
 ### Fix
 * Try fix script cleanup ([#43](https://github.com/amplitude/Amplitude-Python/issues/43)) ([`8c2f0b7`](https://github.com/amplitude/Amplitude-Python/commit/8c2f0b7c1b3f9bdf321b8ca0c1ac6ed5f62e5865))
