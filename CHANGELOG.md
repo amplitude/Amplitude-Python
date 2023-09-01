@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.1.3 (2023-09-01)
+### Fix
+* Set group should set user property ([#51](https://github.com/amplitude/Amplitude-Python/issues/51)) ([`964a1b6`](https://github.com/amplitude/Amplitude-Python/commit/964a1b6693a98f4343e9b4c9f94f89a1b747335c))
+
 ## v1.1.2 (2023-08-04)
 ### Fix
 * Mutable defaults in init ([#48](https://github.com/amplitude/Amplitude-Python/issues/48)) ([`958e394`](https://github.com/amplitude/Amplitude-Python/commit/958e394242e1b0bd9b988a782e611254e496d6e6))
