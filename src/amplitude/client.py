@@ -128,7 +128,8 @@ class Amplitude:
             event_options (amplitude.event.EventOptions): Provide additional information for event
                 like user_id.
         """
-        event = IdentifyEvent(groups={group_type: group_name})
+        identify = Identify().set(group_type, group_name)
+        event = IdentifyEvent(groups={group_type: group_name}, user_properties=identify.user_properties)
         event.load_event_options(event_options)
         self.track(event)
 
