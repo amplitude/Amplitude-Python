@@ -99,6 +99,18 @@ class AmplitudeEventTestCase(unittest.TestCase):
                        "event_properties": {"enum_properties": 'test'}}
         self.assertEqual(expect_dict, event.get_event_body())
 
+    def test_base_event_get_event_body_with_none_value_in_property(self):
+        class TestEnum(enum.Enum):
+            ENUM1 = 'test'
+            ENUM2 = 'test2'
+        event = BaseEvent(event_type="test_event", user_id="test_user", user_properties={"email": "test@test"},
+                          event_properties={'enum_properties': TestEnum.ENUM1, 'empty_property': None})
+        expect_dict = {"event_type": "test_event",
+                       "user_id": "test_user",
+                       "user_properties": {"email": "test@test"},
+                       "event_properties": {"enum_properties": 'test'}}
+        self.assertEqual(expect_dict, event.get_event_body())
+
     def test_base_event_set_dict_event_attributes_with_invalid_value_failed(self):
         event = BaseEvent(event_type="test_event", user_id="test_user")
         event["event_properties"] = {4: "4"}

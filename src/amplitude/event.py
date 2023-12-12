@@ -364,9 +364,11 @@ class EventOptions:
             event_body["ingestion_metadata"] = event_body["ingestion_metadata"].get_body()
         for properties in ["user_properties", "event_properties", "group_properties"]:
             if properties in event_body:
-                for key, value in event_body[properties].items():
+                for key, value in list(event_body[properties].items()):
                     if isinstance(value, enum.Enum):
                         event_body[properties][key] = value.value
+                    if value is None:
+                        event_body[properties].pop(key)
         return utils.truncate(event_body)
 
     def _verify_property(self, key, value) -> bool:
@@ -1249,6 +1251,8 @@ def is_validate_properties(key, value):
     """
     if not isinstance(key, str):
         return False
+    if value is None:
+        return True
     if isinstance(value, list):
         result = True
         for element in value:
