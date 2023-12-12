@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.1.4 (2023-12-12)
+### Fix
+* Allow none property value but not send ([#54](https://github.com/amplitude/Amplitude-Python/issues/54)) ([`677ebe7`](https://github.com/amplitude/Amplitude-Python/commit/677ebe72efe86f231bd4c4bfc13f02794ff63b8b))
+
 ## v1.1.3 (2023-09-01)
 ### Fix
 * Set group should set user property ([#51](https://github.com/amplitude/Amplitude-Python/issues/51)) ([`964a1b6`](https://github.com/amplitude/Amplitude-Python/commit/964a1b6693a98f4343e9b4c9f94f89a1b747335c))
