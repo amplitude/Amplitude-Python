@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.1.5 (2025-02-26)
+### Fix
+* Adding currency property to events ([#60](https://github.com/amplitude/Amplitude-Python/issues/60)) ([`6984e76`](https://github.com/amplitude/Amplitude-Python/commit/6984e769d486048f73c08f7003862c16876b3d99))
+
 ## v1.1.4 (2023-12-12)
 ### Fix
 * Allow none property value but not send ([#54](https://github.com/amplitude/Amplitude-Python/issues/54)) ([`677ebe7`](https://github.com/amplitude/Amplitude-Python/commit/677ebe72efe86f231bd4c4bfc13f02794ff63b8b))
