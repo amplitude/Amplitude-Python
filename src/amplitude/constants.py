@@ -40,6 +40,7 @@ REVENUE_TYPE = "$revenueType"
 REVENUE_RECEIPT = "$receipt"
 REVENUE_RECEIPT_SIG = "$receiptSig"
 REVENUE = "$revenue"
+REVENUE_CURRENCY = "$currency"
 AMP_REVENUE_EVENT = "revenue_amount"
 
 MAX_PROPERTY_KEYS = 1024

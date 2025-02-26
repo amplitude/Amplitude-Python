@@ -145,6 +145,7 @@ EVENT_KEY_MAPPING = {
     "price": ["price", float],
     "quantity": ["quantity", int],
     "revenue": ["revenue", float],
+    "currency": ["currency", str],
     "product_id": ["productId", str],
     "revenue_type": ["revenueType", str],
     "location_lat": ["location_lat", float],
@@ -240,6 +241,7 @@ class EventOptions:
                  revenue: Optional[float] = None,
                  product_id: Optional[str] = None,
                  revenue_type: Optional[str] = None,
+                 currency: Optional[str] = None,
                  location_lat: Optional[float] = None,
                  location_lng: Optional[float] = None,
                  ip: Optional[str] = None,
@@ -277,6 +279,7 @@ class EventOptions:
         self.revenue: Optional[str] = None
         self.product_id: Optional[str] = None
         self.revenue_type: Optional[str] = None
+        self.currency: Optional[str] = None
         self.location_lat: Optional[float] = None
         self.location_lng: Optional[float] = None
         self.ip: Optional[str] = None
@@ -313,6 +316,7 @@ class EventOptions:
         self["revenue"] = revenue
         self["product_id"] = product_id
         self["revenue_type"] = revenue_type
+        self["currency"] = currency
         self["location_lat"] = location_lat
         self["location_lng"] = location_lng
         self["ip"] = ip
@@ -484,6 +488,7 @@ class BaseEvent(EventOptions):
                  revenue: Optional[float] = None,
                  product_id: Optional[str] = None,
                  revenue_type: Optional[str] = None,
+                 currency: Optional[str] = None,
                  location_lat: Optional[float] = None,
                  location_lng: Optional[float] = None,
                  ip: Optional[str] = None,
@@ -520,6 +525,7 @@ class BaseEvent(EventOptions):
                          revenue=revenue,
                          product_id=product_id,
                          revenue_type=revenue_type,
+                         currency=currency,
                          location_lat=location_lat,
                          location_lng=location_lng,
                          ip=ip,
@@ -1042,7 +1048,8 @@ class Revenue:
                  receipt: Optional[str] = None,
                  receipt_sig: Optional[str] = None,
                  properties: Optional[dict] = None,
-                 revenue: Optional[float] = None):
+                 revenue: Optional[float] = None,
+                 currency: Optional[str] = None):
         """The constructor of the Revenue class"""
         self.price: float = price
         self.quantity: int = quantity
@@ -1052,6 +1059,7 @@ class Revenue:
         self.receipt_sig: Optional[str] = receipt_sig
         self.properties: Optional[dict] = properties
         self.revenue: Optional[float] = revenue
+        self.currency: Optional[str] = currency
 
     def set_receipt(self, receipt: str, receipt_signature: str):
         """Set the receipt and signature
@@ -1098,7 +1106,8 @@ class Revenue:
                                  constants.REVENUE_TYPE: self.revenue_type,
                                  constants.REVENUE_RECEIPT: self.receipt,
                                  constants.REVENUE_RECEIPT_SIG: self.receipt_sig,
-                                 constants.REVENUE: self.revenue})
+                                 constants.REVENUE: self.revenue,
+                                 constants.REVENUE_CURRENCY: self.currency})
         return {key: value for key, value in event_properties.items() if value is not None}
 
 
@@ -1178,6 +1187,7 @@ class RevenueEvent(BaseEvent):
                  revenue: Optional[float] = None,
                  product_id: Optional[str] = None,
                  revenue_type: Optional[str] = None,
+                 currency: Optional[str] = None,
                  location_lat: Optional[float] = None,
                  location_lng: Optional[float] = None,
                  ip: Optional[str] = None,
@@ -1219,6 +1229,7 @@ class RevenueEvent(BaseEvent):
                          revenue=revenue,
                          product_id=product_id,
                          revenue_type=revenue_type,
+                         currency=currency,
                          location_lat=location_lat,
                          location_lng=location_lng,
                          ip=ip,

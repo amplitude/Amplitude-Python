@@ -30,10 +30,15 @@ class AmplitudeClientTestCase(unittest.TestCase):
         res = Response(HttpStatus.SUCCESS)
         post_method.return_value = res
         events = []
+        self.assertion_errors = []
 
         def callback_func(event, code, message=None):
-            self.assertEqual(200, code)
-            events.append(event.event_properties["id"])
+            try:
+                self.assertEqual(200, code)
+                events.append(event.event_properties["id"])
+                self.assertEqual('AUD', event.currency)
+            except AssertionError as e:
+                self.assertion_errors.append(str(e))
 
         self.client.configuration.callback = callback_func
         for use_batch in (True, False):
@@ -42,12 +47,14 @@ class AmplitudeClientTestCase(unittest.TestCase):
                 events.clear()
                 self.client.configuration.use_batch = use_batch
                 for i in range(25):
-                    self.client.track(BaseEvent("test_event", "test_user_id", event_properties={"id": i}))
+                    self.client.track(BaseEvent("test_event", "test_user_id",
+                                                event_properties={"id": i}, currency='USD'))
                 for flush_future in self.client.flush():
                     if flush_future:
                         flush_future.result()
                 self.assertEqual(25, len(events))
                 post_method.assert_called()
+                self.assertEqual(0, len(self.assertion_errors))
 
     def test_amplitude_client_track_invalid_api_key_log_error(self):
         post_method = MagicMock()
@@ -84,13 +91,17 @@ class AmplitudeClientTestCase(unittest.TestCase):
         }
         success_res = Response(HttpStatus.SUCCESS)
         events = []
+        self.assertion_errors = []
 
         def callback_func(event, code, message=None):
-            if event.event_properties["id"] in (1, 2, 5, 6, 8):
-                self.assertEqual(400, code)
-            else:
-                self.assertEqual(200, code)
-            events.append((event.event_properties["id"], event.retry))
+            try:
+                if event.event_properties["id"] in (1, 2, 5, 6, 8):
+                    self.assertEqual(400, code)
+                else:
+                    self.assertEqual(200, code)
+                events.append((event.event_properties["id"], event.retry))
+            except AssertionError as e:
+                self.assertion_errors.append(str(e))
 
         self.client.configuration.callback = callback_func
         for use_batch in (True, False):
@@ -107,20 +118,25 @@ class AmplitudeClientTestCase(unittest.TestCase):
                 self.assertEqual(2, post_method.call_count)
                 self.assertEqual([(1, 0), (2, 0), (5, 0), (6, 0), (8, 0),
                                   (0, 1), (3, 1), (4, 1), (7, 1), (9, 1)], events)
+                self.assertEqual(0, len(self.assertion_errors))
 
     def test_amplitude_client_identify_invalid_log_error_then_success(self):
         post_method = MagicMock()
         HttpClient.post = post_method
         res = Response(HttpStatus.SUCCESS)
         post_method.return_value = res
+        self.assertion_errors = []
 
         def callback_func(event, code, message=None):
-            self.assertEqual(200, code)
-            self.assertTrue(isinstance(event, IdentifyEvent))
-            self.assertTrue("user_properties" in event)
-            self.assertEqual("$identify", event["event_type"])
-            self.assertEqual("test_user_id", event["user_id"])
-            self.assertEqual("test_device_id", event["device_id"])
+            try:
+                self.assertEqual(200, code)
+                self.assertTrue(isinstance(event, IdentifyEvent))
+                self.assertTrue("user_properties" in event)
+                self.assertEqual("$identify", event["event_type"])
+                self.assertEqual("test_user_id", event["user_id"])
+                self.assertEqual("test_device_id", event["device_id"])
+            except AssertionError as e:
+                self.assertion_errors.append(str(e))
 
         self.client.configuration.callback = callback_func
         for use_batch in (True, False):
@@ -142,21 +158,26 @@ class AmplitudeClientTestCase(unittest.TestCase):
                     if flush_future:
                         flush_future.result()
                 post_method.assert_called_once()
+                self.assertEqual(0, len(self.assertion_errors))
 
     def test_amplitude_client_group_identify_invalid_log_error_then_success(self):
         post_method = MagicMock()
         HttpClient.post = post_method
         res = Response(HttpStatus.SUCCESS)
         post_method.return_value = res
+        self.assertion_errors = []
 
         def callback_func(event, code, message=None):
-            self.assertEqual(200, code)
-            self.assertTrue(isinstance(event, GroupIdentifyEvent))
-            self.assertTrue("group_properties" in event)
-            self.assertEqual("$groupidentify", event["event_type"])
-            self.assertEqual("test_user_id", event["user_id"])
-            self.assertEqual("test_device_id", event["device_id"])
-            self.assertEqual({"Sports": "Football"}, event["groups"])
+            try:
+                self.assertEqual(200, code)
+                self.assertTrue(isinstance(event, GroupIdentifyEvent))
+                self.assertTrue("group_properties" in event)
+                self.assertEqual("$groupidentify", event["event_type"])
+                self.assertEqual("test_user_id", event["user_id"])
+                self.assertEqual("test_device_id", event["device_id"])
+                self.assertEqual({"Sports": "Football"}, event["groups"])
+            except AssertionError as e:
+                self.assertion_errors.append(str(e))
 
         self.client.configuration.callback = callback_func
         for use_batch in (True, False):
@@ -179,22 +200,27 @@ class AmplitudeClientTestCase(unittest.TestCase):
                     if flush_future:
                         flush_future.result()
                 post_method.assert_called_once()
+                self.assertEqual(0, len(self.assertion_errors))
 
     def test_amplitude_set_group_success(self):
         post_method = MagicMock()
         HttpClient.post = post_method
         res = Response(HttpStatus.SUCCESS)
         post_method.return_value = res
+        self.assertion_errors = []
 
         def callback_func(event, code, message=None):
-            self.assertEqual(200, code)
-            self.assertTrue(isinstance(event, IdentifyEvent))
-            self.assertTrue("groups" in event)
-            self.assertEqual("$identify", event["event_type"])
-            self.assertEqual("test_user_id", event["user_id"])
-            self.assertEqual("test_device_id", event["device_id"])
-            self.assertEqual({"type": ["test_group", "test_group_2"]}, event.groups)
-            self.assertEqual({"$set": {"type": ["test_group", "test_group_2"]}}, event.user_properties)
+            try:
+                self.assertEqual(200, code)
+                self.assertTrue(isinstance(event, IdentifyEvent))
+                self.assertTrue("groups" in event)
+                self.assertEqual("$identify", event["event_type"])
+                self.assertEqual("test_user_id", event["user_id"])
+                self.assertEqual("test_device_id", event["device_id"])
+                self.assertEqual({"type": ["test_group", "test_group_2"]}, event.groups)
+                self.assertEqual({"$set": {"type": ["test_group", "test_group_2"]}}, event.user_properties)
+            except AssertionError as e:
+                self.assertion_errors.append(str(e))
 
         self.client.configuration.callback = callback_func
         for use_batch in (True, False):
@@ -207,30 +233,35 @@ class AmplitudeClientTestCase(unittest.TestCase):
                     if flush_future:
                         flush_future.result()
                 post_method.assert_called_once()
+                self.assertEqual(0, len(self.assertion_errors))
 
     def test_amplitude_client_revenue_invalid_log_error_then_success(self):
         post_method = MagicMock()
         HttpClient.post = post_method
         res = Response(HttpStatus.SUCCESS)
         post_method.return_value = res
+        self.assertion_errors = []
 
         def callback_func(event, code, message=None):
-            self.assertEqual(200, code)
-            self.assertTrue(isinstance(event, RevenueEvent))
-            self.assertTrue("event_properties" in event)
-            self.assertEqual("revenue_amount", event["event_type"])
-            self.assertEqual("test_user_id", event["user_id"])
-            self.assertEqual("test_device_id", event["device_id"])
-            self.assertEqual({'$price': 60.2, '$productId': 'P63', '$quantity': 3, '$receipt': 'A0001',
-                              '$receiptSig': '0001A', 'other_property': 'test'},
-                             event["event_properties"])
+            try:
+                self.assertEqual(200, code)
+                self.assertTrue(isinstance(event, RevenueEvent))
+                self.assertTrue("event_properties" in event)
+                self.assertEqual("revenue_amount", event["event_type"])
+                self.assertEqual("test_user_id", event["user_id"])
+                self.assertEqual("test_device_id", event["device_id"])
+                self.assertEqual({'$price': 60.2, '$productId': 'P63', '$quantity': 3, '$receipt': 'A0001',
+                                  '$currency': 'USD', '$receiptSig': '0001A', 'other_property': 'test'},
+                                 event["event_properties"])
+            except AssertionError as e:
+                self.assertion_errors.append(str(e))
 
         self.client.configuration.callback = callback_func
         for use_batch in (True, False):
             with self.subTest(use_batch=use_batch):
                 post_method.reset_mock()
                 self.client.configuration.use_batch = use_batch
-                revenue_obj = Revenue(price="abc", quantity=3, product_id="P63", properties={"other_property": "test"})
+                revenue_obj = Revenue(price="abc", quantity=3, product_id="P63", currency="USD", properties={"other_property": "test"})
                 self.assertFalse(revenue_obj.is_valid())
                 with self.assertLogs("test", "ERROR") as cm:
                     self.client.configuration.logger = logging.getLogger("test")
@@ -244,18 +275,23 @@ class AmplitudeClientTestCase(unittest.TestCase):
                     if flush_future:
                         flush_future.result()
                 post_method.assert_called_once()
+                self.assertEqual(0, len(self.assertion_errors))
 
     def test_amplitude_client_flush_success(self):
         post_method = MagicMock()
         HttpClient.post = post_method
         res = Response(HttpStatus.SUCCESS)
         post_method.return_value = res
+        self.assertion_errors = []
 
         def callback_func(event, code, message=None):
-            self.assertEqual(200, code)
-            self.assertEqual("flush_test", event["event_type"])
-            self.assertEqual("test_user_id", event["user_id"])
-            self.assertEqual("test_device_id", event["device_id"])
+            try:
+                self.assertEqual(200, code)
+                self.assertEqual("flush_test", event["event_type"])
+                self.assertEqual("test_user_id", event["user_id"])
+                self.assertEqual("test_device_id", event["device_id"])
+            except AssertionError as e:
+                self.assertion_errors.append(str(e))
 
         self.client.configuration.callback = callback_func
         for use_batch in (True, False):
@@ -272,6 +308,7 @@ class AmplitudeClientTestCase(unittest.TestCase):
                     if flush_future:
                         flush_future.result()
                 post_method.assert_called_once()
+                self.assertEqual(0, len(self.assertion_errors))
 
     def test_amplitude_add_remove_plugins_success(self):
         timeline = self.client._Amplitude__timeline
