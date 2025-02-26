@@ -36,7 +36,7 @@ class AmplitudeClientTestCase(unittest.TestCase):
             try:
                 self.assertEqual(200, code)
                 events.append(event.event_properties["id"])
-                self.assertEqual('AUD', event.currency)
+                self.assertEqual('USD', event.currency)
             except AssertionError as e:
                 self.assertion_errors.append(str(e))
 
