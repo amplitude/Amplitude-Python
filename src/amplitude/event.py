@@ -163,7 +163,8 @@ EVENT_KEY_MAPPING = {
     "ingestion_metadata": ["ingestion_metadata", IngestionMetadata],
     "group_properties": ["group_properties", dict],
     "partner_id": ["partner_id", str],
-    "version_name": ["version_name", str]
+    "version_name": ["version_name", str],
+    "user_agent": ["user_agent", str]
 }
 
 
@@ -209,6 +210,7 @@ class EventOptions:
         ingestion_metadata (IngestionMetadata, optional): Ingestion metadata.
         partner_id (str, optional): The partner id.
         version_name (str, optional): The version name.
+        user_agent (str, optional): The user agent string.
         callback (callable, optional): Event level callback method. Triggered when event is sent or failed. Take three
             parameters: an event instance, an integer code of response status, an optional string message.
 
@@ -256,6 +258,7 @@ class EventOptions:
                  ingestion_metadata: Optional[IngestionMetadata] = None,
                  partner_id: Optional[str] = None,
                  version_name: Optional[str] = None,
+                 user_agent: Optional[str] = None,
                  callback=None):
         """The constructor of EventOptions class"""
         self.user_id: Optional[str] = None
@@ -295,6 +298,7 @@ class EventOptions:
         self.ingestion_metadata: Optional[IngestionMetadata] = None
         self.partner_id: Optional[str] = None
         self.version_name: Optional[str] = None
+        self.user_agent: Optional[str] = None
         self["user_id"] = user_id
         self["device_id"] = device_id
         self["time"] = time
@@ -331,6 +335,7 @@ class EventOptions:
         self["ingestion_metadata"] = ingestion_metadata
         self["partner_id"] = partner_id
         self["version_name"] = version_name
+        self["user_agent"] = user_agent
         self.event_callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = callback
         self.__retry: int = 0
 
@@ -455,6 +460,7 @@ class BaseEvent(EventOptions):
         plan (Plan, optional): Tracking plan properties.
         ingestion_metadata (IngestionMetadata, optional): Ingestion metadata.
         partner_id (str, optional): The partner id.
+        user_agent (str, optional): The user agent string.
         callback (callable, optional): Event level callback method. Triggered when event is sent or failed. Take three
             parameters: an event instance, an integer code of response status, an optional string message.
 
@@ -502,6 +508,7 @@ class BaseEvent(EventOptions):
                  plan: Optional[Plan] = None,
                  ingestion_metadata: Optional[IngestionMetadata] = None,
                  partner_id: Optional[str] = None,
+                 user_agent: Optional[str] = None,
                  callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None):
         """The constructor of the BaseEvent class"""
         super().__init__(user_id=user_id,
@@ -539,6 +546,7 @@ class BaseEvent(EventOptions):
                          plan=plan,
                          ingestion_metadata=ingestion_metadata,
                          partner_id=partner_id,
+                         user_agent=user_agent,
                          callback=callback)
         self.event_type: str = event_type
         self.event_properties: Optional[dict] = None
@@ -796,6 +804,7 @@ class GroupIdentifyEvent(BaseEvent):
         plan (Plan, optional): Tracking plan properties.
         ingestion_metadata (IngestionMetadata, optional): Ingestion metadata.
         partner_id (str, optional): The partner id.
+        user_agent (str, optional): The user agent string.
         callback (callable, optional): Event level callback method. Triggered when event is sent or failed. Take three
             parameters: an event instance, an integer code of response status, an optional string message.
         identify_obj (Identify, optional): An Identify instance used to update the event's group_properties
@@ -839,6 +848,7 @@ class GroupIdentifyEvent(BaseEvent):
                  plan: Optional[Plan] = None,
                  ingestion_metadata: Optional[IngestionMetadata] = None,
                  partner_id: Optional[str] = None,
+                 user_agent: Optional[str] = None,
                  callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None,
                  identify_obj: Optional[Identify] = None):
         """The constructor of GroupIdentifyEvent"""
@@ -880,6 +890,7 @@ class GroupIdentifyEvent(BaseEvent):
                          plan=plan,
                          ingestion_metadata=ingestion_metadata,
                          partner_id=partner_id,
+                         user_agent=user_agent,
                          callback=callback)
         if identify_obj:
             self.group_properties = identify_obj.user_properties
@@ -931,6 +942,7 @@ class IdentifyEvent(BaseEvent):
         plan (Plan, optional): Tracking plan properties.
         ingestion_metadata (IngestionMetadata, optional): Ingestion metadata.
         partner_id (str, optional): The partner id.
+        user_agent (str, optional): The user agent string.
         callback (callable, optional): Event level callback method. Triggered when event is sent or failed. Take three
             parameters: an event instance, an integer code of response status, an optional string message.
         identify_obj (Identify, optional): An Identify instance used to update the event's user_properties
@@ -974,6 +986,7 @@ class IdentifyEvent(BaseEvent):
                  plan: Optional[Plan] = None,
                  ingestion_metadata: Optional[IngestionMetadata] = None,
                  partner_id: Optional[str] = None,
+                 user_agent: Optional[str] = None,
                  callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None,
                  identify_obj: Optional[Identify] = None):
         super().__init__(constants.IDENTIFY_EVENT, user_id=user_id,
@@ -1014,6 +1027,7 @@ class IdentifyEvent(BaseEvent):
                          plan=plan,
                          ingestion_metadata=ingestion_metadata,
                          partner_id=partner_id,
+                         user_agent=user_agent,
                          callback=callback)
         if identify_obj:
             self.user_properties = identify_obj.user_properties
@@ -1157,6 +1171,7 @@ class RevenueEvent(BaseEvent):
         plan (Plan, optional): Tracking plan properties.
         ingestion_metadata (IngestionMetadata, optional): Ingestion metadata.
         partner_id (str, optional): The partner id.
+        user_agent (str, optional): The user agent string.
         callback (callable, optional): Event level callback method. Triggered when event is sent or failed. Take three
             parameters: an event instance, an integer code of response status, an optional string message.
         revenue_obj (Revenue, optional): An Revenue instance used to update the event's event_properties
@@ -1201,6 +1216,7 @@ class RevenueEvent(BaseEvent):
                  plan: Optional[Plan] = None,
                  ingestion_metadata: Optional[IngestionMetadata] = None,
                  partner_id: Optional[str] = None,
+                 user_agent: Optional[str] = None,
                  callback: Optional[Callable[[EventOptions, int, Optional[str]], None]] = None,
                  revenue_obj: Optional[Revenue] = None):
         """The constructor of RevenueEvent class"""
@@ -1243,6 +1259,7 @@ class RevenueEvent(BaseEvent):
                          plan=plan,
                          ingestion_metadata=ingestion_metadata,
                          partner_id=partner_id,
+                         user_agent=user_agent,
                          callback=callback)
         if revenue_obj:
             if not self.event_properties:

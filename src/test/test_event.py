@@ -410,6 +410,11 @@ class AmplitudeEventTestCase(unittest.TestCase):
         self.assertTrue("ingestion_metadata" in event)
         self.assertEqual({"event_type": "test_event", "ingestion_metadata": expected}, event.get_event_body())
 
+    def test_event_user_agent(self):
+        expected = "test_user_agent"
+        event = BaseEvent("test_event", user_agent=expected)
+        self.assertTrue("user_agent" in event)
+        self.assertEqual({"event_type": "test_event", "user_agent": expected}, event.get_event_body())
 
 if __name__ == '__main__':
     unittest.main()
