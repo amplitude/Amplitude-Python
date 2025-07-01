@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.2.0 (2025-07-01)
+### Feature
+* Add support for setting user agent on event ([#61](https://github.com/amplitude/Amplitude-Python/issues/61)) ([`bda8b95`](https://github.com/amplitude/Amplitude-Python/commit/bda8b95f50daf092f0fe570fab473e2255f6f5d5))
+
 ## v1.1.5 (2025-02-26)
 ### Fix
 * Adding currency property to events ([#60](https://github.com/amplitude/Amplitude-Python/issues/60)) ([`6984e76`](https://github.com/amplitude/Amplitude-Python/commit/6984e769d486048f73c08f7003862c16876b3d99))
