@@ -18,6 +18,15 @@ from .events import (
 from .config import AIConfig
 
 
+def _is_ai_event(event: BaseEvent) -> bool:
+    """Check if an event is an AI observability event."""
+    ai_event_types = {
+        "llm_run_started", "llm_message", "user_message", 
+        "tool_called", "llm_run_finished"
+    }
+    return getattr(event, 'event_type', None) in ai_event_types
+
+
 class AIObservabilityPlugin(EventPlugin):
     """Plugin for processing AI observability events.
     
@@ -47,7 +56,7 @@ class AIObservabilityPlugin(EventPlugin):
             The processed event, or None to drop the event
         """
         # Only process AI events
-        if not self._is_ai_event(event):
+        if not _is_ai_event(event):
             return event
         
         # Apply privacy filtering
@@ -63,25 +72,6 @@ class AIObservabilityPlugin(EventPlugin):
         
         return event
     
-    def _is_ai_event(self, event: BaseEvent) -> bool:
-        """Check if an event is an AI observability event.
-        
-        Args:
-            event: The event to check
-            
-        Returns:
-            True if this is an AI event
-        """
-        ai_event_types = {
-            "llm_run_started",
-            "llm_message",
-            "user_message", 
-            "tool_called",
-            "llm_run_finished"
-        }
-        return (isinstance(event, (LLMRunStartedEvent, LLMMessageEvent, UserMessageEvent, 
-                                  ToolCalledEvent, LLMRunFinishedEvent)) or
-                getattr(event, 'event_type', None) in ai_event_types)
     
     def _apply_privacy_settings(self, event: BaseEvent) -> Optional[BaseEvent]:
         """Apply privacy settings to AI events.
@@ -258,7 +248,7 @@ class AIEventFilterPlugin(EventPlugin):
             The event if it passes filters, None to drop it
         """
         # Only filter AI events
-        if not self._is_ai_event(event):
+        if not _is_ai_event(event):
             return event
         
         if not hasattr(event, 'event_properties') or not event.event_properties:
@@ -307,16 +297,6 @@ class AIEventFilterPlugin(EventPlugin):
         
         return event
     
-    def _is_ai_event(self, event: BaseEvent) -> bool:
-        """Check if an event is an AI observability event."""
-        ai_event_types = {
-            "llm_run_started",
-            "llm_message",
-            "user_message", 
-            "tool_called",
-            "llm_run_finished"
-        }
-        return getattr(event, 'event_type', None) in ai_event_types
 
 
 class AIMetricsPlugin(EventPlugin):

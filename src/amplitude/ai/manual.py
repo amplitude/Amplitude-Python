@@ -6,7 +6,7 @@ when automatic instrumentation is not sufficient or desired.
 
 import time
 import uuid
-from typing import Optional, Dict, Any, List, Union
+from typing import Optional, Dict, Any, List
 from contextlib import contextmanager
 
 from amplitude.client import Amplitude
@@ -14,11 +14,6 @@ from .config import AIConfig
 from .events import (
     get_current_session_id,
     set_session_id,
-    LLMRunStartedEvent,
-    LLMMessageEvent,
-    UserMessageEvent,
-    ToolCalledEvent,
-    LLMRunFinishedEvent,
     emit_llm_run_started,
     emit_llm_message,
     emit_user_message,

@@ -2,20 +2,15 @@
 
 import time
 import uuid
-from typing import Optional, Dict, Any, List, Union
+from typing import Optional, Dict, Any, List
 
 try:
     from langchain_core.callbacks import BaseCallbackHandler
-    from langchain_core.messages import BaseMessage
     from langchain_core.outputs import LLMResult
     from langchain_core.agents import AgentAction, AgentFinish
-    _LANGCHAIN_AVAILABLE = True
 except ImportError:
-    _LANGCHAIN_AVAILABLE = False
     # Create dummy classes for type hints
     class BaseCallbackHandler:
-        pass
-    class BaseMessage:
         pass
     class LLMResult:
         pass
@@ -26,6 +21,7 @@ except ImportError:
 
 from amplitude.client import Amplitude
 from .config import AIConfig
+from .instrumentation import EventEmitter
 from .events import (
     get_current_session_id, 
     set_session_id,
@@ -61,7 +57,9 @@ class AmplitudeLangChainCallback(BaseCallbackHandler):
             device_id: Optional device ID for events
             auto_start_session: Whether to automatically emit run_started event
         """
-        if not _LANGCHAIN_AVAILABLE:
+        try:
+            from langchain_core.callbacks import BaseCallbackHandler
+        except ImportError:
             raise ImportError("LangChain not installed. Install with: pip install langchain-core")
         
         super().__init__()
@@ -70,6 +68,7 @@ class AmplitudeLangChainCallback(BaseCallbackHandler):
         self.ai_config = ai_config or AIConfig()
         self.user_id = user_id
         self.device_id = device_id
+        self.event_emitter = EventEmitter(amplitude_client, self.ai_config)
         
         # Session management
         if session_id:
@@ -96,21 +95,7 @@ class AmplitudeLangChainCallback(BaseCallbackHandler):
     
     def _emit_event(self, event) -> None:
         """Emit an event to Amplitude."""
-        if self.ai_config.async_event_emission:
-            # Emit asynchronously to avoid blocking
-            import threading
-            def emit():
-                try:
-                    self.amplitude_client.track(event)
-                except Exception:
-                    pass  # Silently ignore emission errors
-            thread = threading.Thread(target=emit, daemon=True)
-            thread.start()
-        else:
-            try:
-                self.amplitude_client.track(event)
-            except Exception:
-                pass  # Silently ignore emission errors
+        self.event_emitter.emit_event(event)
     
     def _emit_run_started(self):
         """Emit run started event."""
