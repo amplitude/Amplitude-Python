@@ -90,4 +90,9 @@ class AIConfig:
         """
         if len(content) <= self.max_content_length:
             return content
+        
+        # Handle edge case where max_length is too small for ellipsis
+        if self.max_content_length < 3:
+            return content[:self.max_content_length]
+            
         return content[:self.max_content_length - 3] + "..."
