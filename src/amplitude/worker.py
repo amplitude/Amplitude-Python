@@ -8,7 +8,6 @@ from amplitude.processor import ResponseProcessor
 
 
 class Workers:
-
     def __init__(self):
         self.threads_pool = ThreadPoolExecutor(max_workers=16)
         self.is_active = True
@@ -37,9 +36,13 @@ class Workers:
         self.threads_pool.shutdown()
 
     def flush(self):
-        events = self.storage.pull_all()
-        if events:
-            return self.threads_pool.submit(self.send, events)
+        futures = []
+        while self.storage.total_events:
+            events = self.storage.pull(self.configuration.flush_queue_size)
+            if events:
+                future = self.threads_pool.submit(self.send, events)
+                futures.append(future)
+        return futures
 
     def send(self, events):
         url = self.configuration.server_url
@@ -51,23 +54,22 @@ class Workers:
             self.configuration.logger.error("Invalid API Key")
 
     def get_payload(self, events) -> bytes:
-        payload_body = {
-            "api_key": self.configuration.api_key,
-            "events": []
-        }
+        payload_body = {"api_key": self.configuration.api_key, "events": []}
         for event in events:
             event_body = event.get_event_body()
             if event_body:
                 payload_body["events"].append(event_body)
         if self.configuration.options:
             payload_body["options"] = self.configuration.options
-        return json.dumps(payload_body, sort_keys=True).encode('utf8')
+        return json.dumps(payload_body, sort_keys=True).encode("utf8")
 
     def buffer_consumer(self):
         try:
             if self.is_active:
                 with self.storage.lock:
-                    self.storage.lock.wait(self.configuration.flush_interval_millis / 1000)
+                    self.storage.lock.wait(
+                        self.configuration.flush_interval_millis / 1000
+                    )
                     while True:
                         if not self.storage.total_events:
                             break

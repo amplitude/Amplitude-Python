@@ -44,7 +44,7 @@ class Timeline:
         destination_futures = []
         for destination in self.plugins[PluginType.DESTINATION]:
             try:
-                destination_futures.append(destination.flush())
+                destination_futures.extend(destination.flush())
             except Exception:
                 self.logger.exception("Error for flush events")
         return destination_futures
