@@ -38,11 +38,11 @@ class Workers:
     def flush(self):
         futures = []
         with self.storage.lock:
-            while self.storage.total_events:
+            while True:
                 events = self.storage.pull(self.configuration.flush_queue_size)
-                if events:
-                    future = self.threads_pool.submit(self.send, events)
-                    futures.append(future)
+                if not events:
+                    break
+                futures.append(self.threads_pool.submit(self.send, events))
         return futures
 
     def send(self, events):
