@@ -38,11 +38,20 @@ class AmplitudeWorkersTestCase(unittest.TestCase):
         self.assertIsNotNone(self.workers.response_processor)
 
     def test_worker_stop_success(self):
-        self.workers.storage.pull_all = MagicMock()
+        for i in range(5):
+            self.workers.storage.push(BaseEvent(f"event_{i}", "test_user"))
+
+        success_response = Response(HttpStatus.SUCCESS)
+        HttpClient.post = MagicMock(return_value=success_response)
+
         self.workers.stop()
         self.assertFalse(self.workers.is_active)
         self.assertTrue(self.workers.is_started)
-        self.workers.storage.pull_all.assert_called_once()
+
+        # Verify storage was flushed (all events removed)
+        self.assertEqual(0, self.workers.storage.total_events)
+        self.assertEqual(0, len(self.workers.storage.ready_queue))
+        self.assertEqual(0, len(self.workers.storage.buffer_data))
 
     def test_worker_get_payload_success(self):
         events = [BaseEvent("test_event1", "test_user"), BaseEvent("test_event2", "test_user")]
@@ -150,11 +159,25 @@ class AmplitudeWorkersTestCase(unittest.TestCase):
         success_response = Response(HttpStatus.SUCCESS)
         payload_too_large_response = Response(HttpStatus.PAYLOAD_TOO_LARGE)
         HttpClient.post = MagicMock()
-        HttpClient.post.side_effect = [payload_too_large_response, payload_too_large_response, success_response]
+        # First send gets PAYLOAD_TOO_LARGE (divider 1→2, size 30→15)
+        # First flush sends 2 batches of 15:
+        #   - Batch 1 (15) fails: len(15) <= 15 → TRUE → increase (divider 2→3, size 15→10)
+        #   - Batch 2 (15) fails: len(15) <= 10 → FALSE → don't increase
+        # Second flush sends 3 batches of 10, all succeed
+        HttpClient.post.side_effect = [
+            payload_too_large_response,  # Initial send of 30 events
+            payload_too_large_response,  # First flush batch 1 (15 events)
+            payload_too_large_response,  # First flush batch 2 (15 events)
+            success_response,  # Second flush batch 1 (10 events)
+            success_response,  # Second flush batch 2 (10 events)
+            success_response   # Second flush batch 3 (10 events)
+        ]
         self.workers.configuration.flush_queue_size = 30
         self.workers.send(events)
         self.assertEqual(15, self.workers.configuration.flush_queue_size)
         self.workers.flush().result()
+        # After first flush, only first batch increased divider (15 <= 15)
+        # Second batch didn't (15 > 10), so divider only went 2→3
         self.assertEqual(10, self.workers.configuration.flush_queue_size)
         self.workers.flush().result()
         self.assertEqual(30, len(self.events_dict[200]))
