@@ -22,8 +22,9 @@ class ResponseProcessor:
                 self.callback(events, res.code, res.error)
                 self.log(events, res.code, res.error)
             else:
-                # Only reduce if batch was at or below current limit
-                # This prevents multiple reductions from same flush operation
+                # Reduce only if batch didn't exceed current limit (was expected to work).
+                # Batches larger than limit are from old limits already deemed too large,
+                # so failing again doesn't provide new information - skip to avoid over-reduction.
                 if len(events) <= self.configuration.flush_queue_size:
                     self.configuration._increase_flush_divider()
                 self.push_to_storage(events, 0, res)

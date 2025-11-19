@@ -46,13 +46,8 @@ class Workers:
             return None
 
         batch_size = self.configuration.flush_queue_size
-        batches = []
-        for i in range(0, len(events), batch_size):
-            batches.append(events[i:i + batch_size])
-
-        batch_futures = []
-        for batch in batches:
-            batch_futures.append(self.threads_pool.submit(self.send, batch))
+        batches = [events[i:i + batch_size] for i in range(0, len(events), batch_size)]
+        batch_futures = [self.threads_pool.submit(self.send, batch) for batch in batches]
 
         if len(batch_futures) == 1:
             return batch_futures[0]
@@ -76,9 +71,6 @@ class Workers:
             if errors:
                 raise errors[0]
 
-            self.configuration.logger.info(
-                f"Flush completed: {len(batch_futures)} batches sent"
-            )
             return None
 
         return self.threads_pool.submit(wait_for_all)
