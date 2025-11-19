@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.2.1 (2025-11-19)
+### Fix
+* Respect flush_queue_size in Worker.flush() ([#64](https://github.com/amplitude/Amplitude-Python/issues/64)) ([`d9accf0`](https://github.com/amplitude/Amplitude-Python/commit/d9accf06bafa27446a641cc84a5d8a3f8a86c700))
+
 ## v1.2.0 (2025-07-01)
 ### Feature
 * Add support for setting user agent on event ([#61](https://github.com/amplitude/Amplitude-Python/issues/61)) ([`bda8b95`](https://github.com/amplitude/Amplitude-Python/commit/bda8b95f50daf092f0fe570fab473e2255f6f5d5))
