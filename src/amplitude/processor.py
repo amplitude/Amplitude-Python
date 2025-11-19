@@ -22,7 +22,11 @@ class ResponseProcessor:
                 self.callback(events, res.code, res.error)
                 self.log(events, res.code, res.error)
             else:
-                self.configuration._increase_flush_divider()
+                # Reduce only if batch didn't exceed current limit (was expected to work).
+                # Batches larger than limit are from old limits already deemed too large,
+                # so failing again doesn't provide new information - skip to avoid over-reduction.
+                if len(events) <= self.configuration.flush_queue_size:
+                    self.configuration._increase_flush_divider()
                 self.push_to_storage(events, 0, res)
         elif res.status == HttpStatus.INVALID_REQUEST:
             if res.error.startswith("Invalid API key:"):

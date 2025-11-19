@@ -37,9 +37,43 @@ class Workers:
         self.threads_pool.shutdown()
 
     def flush(self):
+        if not self.storage:
+            return None
+
         events = self.storage.pull_all()
-        if events:
-            return self.threads_pool.submit(self.send, events)
+
+        if not events:
+            return None
+
+        batch_size = self.configuration.flush_queue_size
+        batches = [events[i:i + batch_size] for i in range(0, len(events), batch_size)]
+        batch_futures = [self.threads_pool.submit(self.send, batch) for batch in batches]
+
+        if len(batch_futures) == 1:
+            return batch_futures[0]
+
+        return self._create_combined_future(batch_futures)
+
+    def _create_combined_future(self, batch_futures):
+        def wait_for_all():
+            errors = []
+
+            for i, future in enumerate(batch_futures):
+                try:
+                    future.result()
+                except Exception as e:
+                    self.configuration.logger.error(
+                        f"Flush batch {i+1}/{len(batch_futures)} failed: {e}"
+                    )
+                    errors.append(e)
+
+            # If any batches failed, raise the first error
+            if errors:
+                raise errors[0]
+
+            return None
+
+        return self.threads_pool.submit(wait_for_all)
 
     def send(self, events):
         url = self.configuration.server_url
