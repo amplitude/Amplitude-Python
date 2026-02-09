@@ -195,15 +195,20 @@ class AmplitudeWorkersTestCase(unittest.TestCase):
         self.assertEqual(100, len(self.events_dict[200]))
         self.assertEqual(3, HttpClient.post.call_count)
 
-    def test_worker_send_events_with_unknown_error_trigger_callback(self):
+    def test_worker_send_events_with_unknown_error_retry_all_events(self):
+        events = self.get_events_list(100)
+        success_response = Response(HttpStatus.SUCCESS)
         unknown_error_response = Response(HttpStatus.UNKNOWN)
         HttpClient.post = MagicMock()
-        HttpClient.post.return_value = unknown_error_response
-        self.workers.send(self.get_events_list(100))
-        self.assertEqual(100, len(self.events_dict[-1]))
-        HttpClient.post.assert_called_once()
-        self.workers.flush()
-        HttpClient.post.assert_called_once()
+        HttpClient.post.side_effect = [unknown_error_response, success_response]
+        self.workers.send(events)
+        self.assertEqual(0, len(self.events_dict[-1]))
+        self.assertEqual(0, len(self.events_dict[200]))
+        self.workers.flush().result()
+        self.assertEqual(100, len(self.events_dict[200]))
+        self.assertEqual(2, HttpClient.post.call_count)
+        for event in events:
+            self.assertEqual(1, event.retry)
 
     def test_worker_send_events_with_too_many_requests_response_callback_and_retry(self):
         success_response = Response(HttpStatus.SUCCESS)
