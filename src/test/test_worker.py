@@ -284,8 +284,7 @@ class AmplitudeWorkersTestCase(unittest.TestCase):
                     t.start()
                 for t in threads:
                     t.join()
-                while self.workers.storage.total_events > 0:
-                    time.sleep(0.1)
+                self.wait_for_workers_idle()
                 total_events = sum([len(self.events_dict[s]) for s in self.events_dict])
                 self.assertEqual(0, self.workers.storage.total_events)
                 self.assertEqual(5000, total_events)
@@ -293,6 +292,19 @@ class AmplitudeWorkersTestCase(unittest.TestCase):
     def push_event(self, events):
         for event in events:
             self.workers.storage.push(event)
+
+    def wait_for_workers_idle(self, timeout=30):
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            flush_future = self.workers.flush()
+            if flush_future:
+                flush_future.result()
+            # Ensure currently queued thread pool work is complete.
+            self.workers.threads_pool.submit(lambda: None).result()
+            if self.workers.storage.total_events == 0 and not self.workers.is_started:
+                return
+            time.sleep(0.1)
+        self.fail("Timed out waiting for workers to process all queued events")
 
     @staticmethod
     def get_events_list(n):
