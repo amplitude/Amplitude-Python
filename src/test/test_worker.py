@@ -301,8 +301,12 @@ class AmplitudeWorkersTestCase(unittest.TestCase):
                 flush_future.result()
             # Ensure currently queued thread pool work is complete.
             self.workers.threads_pool.submit(lambda: None).result()
-            if self.workers.storage.total_events == 0 and not self.workers.is_started:
-                return
+            if self.workers.storage.total_events == 0:
+                if not self.workers.is_started:
+                    return
+                # Wake the sleeping consumer so is_started can flip to False promptly.
+                with self.workers.storage.lock:
+                    self.workers.storage.lock.notify()
             time.sleep(0.1)
         self.fail("Timed out waiting for workers to process all queued events")
 
