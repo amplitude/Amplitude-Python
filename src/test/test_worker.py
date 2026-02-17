@@ -195,15 +195,20 @@ class AmplitudeWorkersTestCase(unittest.TestCase):
         self.assertEqual(100, len(self.events_dict[200]))
         self.assertEqual(3, HttpClient.post.call_count)
 
-    def test_worker_send_events_with_unknown_error_trigger_callback(self):
+    def test_worker_send_events_with_unknown_error_retry_all_events(self):
+        events = self.get_events_list(100)
+        success_response = Response(HttpStatus.SUCCESS)
         unknown_error_response = Response(HttpStatus.UNKNOWN)
         HttpClient.post = MagicMock()
-        HttpClient.post.return_value = unknown_error_response
-        self.workers.send(self.get_events_list(100))
-        self.assertEqual(100, len(self.events_dict[-1]))
-        HttpClient.post.assert_called_once()
-        self.workers.flush()
-        HttpClient.post.assert_called_once()
+        HttpClient.post.side_effect = [unknown_error_response, success_response]
+        self.workers.send(events)
+        self.assertEqual(0, len(self.events_dict[-1]))
+        self.assertEqual(0, len(self.events_dict[200]))
+        self.workers.flush().result()
+        self.assertEqual(100, len(self.events_dict[200]))
+        self.assertEqual(2, HttpClient.post.call_count)
+        for event in events:
+            self.assertEqual(1, event.retry)
 
     def test_worker_send_events_with_too_many_requests_response_callback_and_retry(self):
         success_response = Response(HttpStatus.SUCCESS)
@@ -279,8 +284,7 @@ class AmplitudeWorkersTestCase(unittest.TestCase):
                     t.start()
                 for t in threads:
                     t.join()
-                while self.workers.storage.total_events > 0:
-                    time.sleep(0.1)
+                self.wait_for_workers_idle()
                 total_events = sum([len(self.events_dict[s]) for s in self.events_dict])
                 self.assertEqual(0, self.workers.storage.total_events)
                 self.assertEqual(5000, total_events)
@@ -288,6 +292,23 @@ class AmplitudeWorkersTestCase(unittest.TestCase):
     def push_event(self, events):
         for event in events:
             self.workers.storage.push(event)
+
+    def wait_for_workers_idle(self, timeout=30):
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            flush_future = self.workers.flush()
+            if flush_future:
+                flush_future.result()
+            # Ensure currently queued thread pool work is complete.
+            self.workers.threads_pool.submit(lambda: None).result()
+            if self.workers.storage.total_events == 0:
+                if not self.workers.is_started:
+                    return
+                # Wake the sleeping consumer so is_started can flip to False promptly.
+                with self.workers.storage.lock:
+                    self.workers.storage.lock.notify()
+            time.sleep(0.1)
+        self.fail("Timed out waiting for workers to process all queued events")
 
     @staticmethod
     def get_events_list(n):
