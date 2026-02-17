@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.2.2 (2026-02-17)
+### Fix
+* Treat HttpStatus.UNKNOWN as retryable ([#70](https://github.com/amplitude/Amplitude-Python/issues/70)) ([`3e1db08`](https://github.com/amplitude/Amplitude-Python/commit/3e1db08f110c570a7d7c07692e121703e8d376e0))
+
 ## v1.2.1 (2025-11-19)
 ### Fix
 * Respect flush_queue_size in Worker.flush() ([#64](https://github.com/amplitude/Amplitude-Python/issues/64)) ([`d9accf0`](https://github.com/amplitude/Amplitude-Python/commit/d9accf06bafa27446a641cc84a5d8a3f8a86c700))
