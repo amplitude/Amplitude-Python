@@ -44,9 +44,9 @@ jobs:
       - name: Run Test
         run: python -m unittest discover -s ./src -p 'test_*.py'
 
-      - name: Publish distribution PyPI --dry-run
+      - name: Publish distribution to VCS Release (dry run)
         if: ${{ github.event.inputs.dryRun == 'true'}}
-        run: |  
+        run: |
           semantic-release -vv version --no-commit --no-tag --no-push
 
       - name: Publish distribution to VCS Release
