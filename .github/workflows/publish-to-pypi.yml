@@ -47,7 +47,7 @@ jobs:
       - name: Publish distribution PyPI --dry-run
         if: ${{ github.event.inputs.dryRun == 'true'}}
         run: |  
-          semantic-release -vv version --no-commit --no-tag --no-push --noop
+          semantic-release -vv version --no-commit --no-tag --no-push
 
       - name: Publish distribution to VCS Release
         if: ${{ github.event.inputs.dryRun == 'false'}}
