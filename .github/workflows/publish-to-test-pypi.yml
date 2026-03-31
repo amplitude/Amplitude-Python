@@ -3,6 +3,10 @@ name: Publish to Test PyPI
 on:
   workflow_dispatch:
     inputs:
+      dryRun:
+        description: "Preview only (no version bump, no publish)"
+        required: true
+        default: "true"
 
 jobs:
   authorize:
@@ -17,13 +21,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-n-publish:
-    name: Build and publish to PyPI
+    name: Build and publish to Test PyPI
     runs-on: ubuntu-latest
     needs: [authorize]
     permissions:
+      contents: write
       id-token: write
     steps:
-      - name: Checkout for release to PyPI
+      - name: Checkout for release to Test PyPI
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
@@ -36,17 +41,24 @@ jobs:
       - name: Run Test
         run: python -m unittest discover -s ./src -p 'test_*.py'
 
-      - name: Publish distribution to VCS (dry run)
+      - name: Semantic release (dry run)
+        if: ${{ github.event.inputs.dryRun == 'true' }}
         run: |
           python -m pip install python-semantic-release==10.5.3
-          semantic-release --noop -vv version --no-commit --no-tag --no-push
+          semantic-release -vv version --no-commit --no-tag --no-push --noop
 
       - name: Semantic release version
+        if: ${{ github.event.inputs.dryRun == 'false' }}
         run: |
           python -m pip install python-semantic-release==10.5.3
+          git config user.name amplitude-sdk-bot
+          git config user.email amplitude-sdk-bot@users.noreply.github.com
           semantic-release version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish distribution Test PyPI
+        if: ${{ github.event.inputs.dryRun == 'false' }}
         uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e
         with:
           repository_url: https://test.pypi.org/legacy/
