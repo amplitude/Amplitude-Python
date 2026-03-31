@@ -3,10 +3,6 @@ name: Publish to PyPI
 on:
   workflow_dispatch:
     inputs:
-      dryRun:
-        description: 'Do a dry run to preview instead of a real release'
-        required: true
-        default: 'true'
 
 jobs:
   authorize:
@@ -32,33 +28,20 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Python 3.8
+      - name: Set up Python 3.9
         uses: actions/setup-python@v3
         with:
-          python-version: 3.8
+          python-version: 3.9
 
       - name: Run Test
         run: python -m unittest discover -s ./src -p 'test_*.py'
 
-      - name: Publish distribution PyPI --dry-run
-        if: ${{ github.event.inputs.dryRun == 'true'}}
+      - name: Publish distribution to VCS (dry run)
         run: |
           python -m pip install "python-semantic-release>=10,<11"
           semantic-release --noop -vv version --no-commit --no-tag --no-push
 
       - name: Publish distribution Test PyPI
-        if: ${{ github.event.inputs.dryRun == 'false'}}
-        run: |
-          python -m pip install "python-semantic-release>=10,<11"
-          git config user.name amplitude-sdk-bot
-          git config user.email amplitude-sdk-bot@users.noreply.github.com
-          semantic-release publish
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPOSITORY_USERNAME: __token__
-
-      - name: Publish distribution Test PyPI
         uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e
         with:
-          user: __token__
           repository_url: https://test.pypi.org/legacy/

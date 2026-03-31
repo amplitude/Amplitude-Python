@@ -32,10 +32,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Python 3.8
+      - name: Set up Python 3.9
         uses: actions/setup-python@v3
         with:
-          python-version: 3.8
+          python-version: 3.9
 
       - name: Run Test
         run: python -m unittest discover -s ./src -p 'test_*.py'
@@ -46,7 +46,7 @@ jobs:
           python -m pip install python-semantic-release==10.5.3
           semantic-release -vv version --no-commit --no-tag --no-push
 
-      - name: Publish distribution PyPI
+      - name: Publish distribution to VCS Release
         if: ${{ github.event.inputs.dryRun == 'false'}}
         run: |
           python -m pip install python-semantic-release==10.5.3
@@ -58,6 +58,5 @@ jobs:
           REPOSITORY_USERNAME: __token__
 
       - name: Publish distribution PyPI
+        if: ${{ github.event.inputs.dryRun == 'false'}}
         uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e
-        with:
-          user: __token__
