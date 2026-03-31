@@ -41,16 +41,17 @@ jobs:
       - name: Run Test
         run: python -m unittest discover -s ./src -p 'test_*.py'
 
+      - name: Install semantic release
+        run: python -m pip install python-semantic-release==10.5.3
+
       - name: Semantic release (dry run)
         if: ${{ github.event.inputs.dryRun == 'true' }}
         run: |
-          python -m pip install python-semantic-release==10.5.3
           semantic-release -vv version --no-commit --no-tag --no-push --noop
 
       - name: Semantic release version
         if: ${{ github.event.inputs.dryRun == 'false' }}
         run: |
-          python -m pip install python-semantic-release==10.5.3
           git config user.name amplitude-sdk-bot
           git config user.email amplitude-sdk-bot@users.noreply.github.com
           semantic-release version
