@@ -8,8 +8,7 @@ commit_message = "chore(release): Bump version to {version}"
 commit_author = "amplitude-sdk-bot <amplitude-sdk-bot@users.noreply.github.com>"
 
 [tool.semantic_release.branches.main]
-# TEMPORARY... remove AMP-151270 before merging!!!
-match = "(main|master|AMP-151270-upgrade-semantic-release)"
+match = "(main|master)"
 prerelease = false
 
 [tool.semantic_release.publish]
