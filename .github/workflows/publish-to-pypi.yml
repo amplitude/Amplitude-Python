@@ -57,7 +57,6 @@ jobs:
           semantic-release version
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPOSITORY_USERNAME: __token__
 
       - name: Publish distribution PyPI
         if: ${{ github.event.inputs.dryRun == 'false'}}
