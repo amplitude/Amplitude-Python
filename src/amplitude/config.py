@@ -34,6 +34,8 @@ class Config:
             Provide storage instance for events buffer.
         plan (amplitude.event.Plan, optional): Tracking plan information. Default to None.
         ingestion_metadata (amplitude.event.IngestionMetadata, optional): Ingestion metadata. Default to None.
+        event_log_level (amplitude.constants.EventLogLevel, optional): Level used to log each event after it is
+            sent or dropped. EventLogLevel.NONE disables these logs. Default to EventLogLevel.INFO.
 
     Properties:
         options: A dictionary contains minimum id length information. None if min_id_length not set.
@@ -57,7 +59,8 @@ class Config:
                  server_url: Optional[str] = None,
                  storage_provider: Optional[StorageProvider] = None,
                  plan: Plan = None,
-                 ingestion_metadata: IngestionMetadata = None):
+                 ingestion_metadata: IngestionMetadata = None,
+                 event_log_level: constants.EventLogLevel = constants.EventLogLevel.INFO):
         """The constructor of Config class"""
         self.api_key: str = api_key
         self._flush_queue_size: int = flush_queue_size
@@ -74,6 +77,7 @@ class Config:
         self.opt_out: bool = False
         self.plan: Plan = plan
         self.ingestion_metadata: IngestionMetadata = ingestion_metadata
+        self.event_log_level: constants.EventLogLevel = event_log_level
 
     def get_storage(self) -> Storage:
         """Use configured StorageProvider to create a Storage instance then return.

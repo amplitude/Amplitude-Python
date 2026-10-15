@@ -1,3 +1,4 @@
+from amplitude.constants import EventLogLevel
 from amplitude.exception import InvalidAPIKeyError
 from amplitude.http_client import HttpStatus
 
@@ -83,5 +84,9 @@ class ResponseProcessor:
                 self.configuration.logger.exception(f"Error callback for event {event}")
     
     def log(self, events, code, message):
+        level = self.configuration.event_log_level
+        if level == EventLogLevel.NONE:
+            return
+        log_fn = self.configuration.logger.debug if level == EventLogLevel.DEBUG else self.configuration.logger.info
         for event in events:
-            self.configuration.logger.info(message, extra={'code':code, 'event':event})
+            log_fn(message, extra={'code':code, 'event':event})

@@ -57,3 +57,9 @@ class PluginType(Enum):
     ENRICHMENT = 1
     DESTINATION = 2
     OBSERVE = 3
+
+
+class EventLogLevel(Enum):
+    NONE = 0
+    DEBUG = 1
+    INFO = 2
