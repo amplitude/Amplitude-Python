@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 from threading import Thread, RLock
 
 from amplitude.exception import InvalidAPIKeyError
-from amplitude.http_client import HttpClient
+from amplitude.http_client import HttpClient, HttpStatus
 from amplitude.processor import ResponseProcessor
 
 
@@ -77,7 +77,13 @@ class Workers:
 
     def send(self, events):
         url = self.configuration.server_url
-        payload = self.get_payload(events)
+        try:
+            payload = self.get_payload(events)
+        except (TypeError, ValueError) as error:
+            message = "Could not serialize event batch: " + str(error)
+            self.configuration.logger.error(message)
+            self.response_processor.callback(events, HttpStatus.INVALID_REQUEST.value, message)
+            raise
         res = HttpClient.post(url, payload)
         try:
             self.response_processor.process_response(res, events)
