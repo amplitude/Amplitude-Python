@@ -1,9 +1,10 @@
 import time
+from datetime import datetime
 import unittest
 from collections import defaultdict
 import random
 from threading import Thread
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from amplitude import Config, BaseEvent
 from amplitude.storage import InMemoryStorage
@@ -27,6 +28,48 @@ class AmplitudeWorkersTestCase(unittest.TestCase):
     def tearDown(self) -> None:
         with self.workers.storage.lock:
             self.workers.storage.lock.notify()
+
+    def test_worker_serialization_errors_notify_callbacks_and_log(self):
+        for value, error_type in [(datetime(2024, 1, 1), TypeError), (b"bytes", TypeError)]:
+            with self.subTest(error_type=error_type):
+                event_callback = MagicMock()
+                callback = MagicMock()
+                self.workers.configuration.callback = callback
+                event = BaseEvent("invalid", "test_user", event_properties={}, callback=event_callback)
+                # Enrichment can modify properties after constructor validation.
+                event.event_properties["value"] = value
+                valid_event = BaseEvent("valid", "test_user")
+                events = [event, valid_event]
+                with patch.object(HttpClient, "post") as post:
+                    with self.assertLogs("amplitude", "ERROR") as logs:
+                        with self.assertRaises(error_type) as raised:
+                            self.workers.send(events)
+                    post.assert_not_called()
+                message = "Could not serialize event batch: " + str(raised.exception)
+                self.assertIn(message, logs.output[0])
+                self.assertEqual(callback.call_count, 2)
+                callback.assert_any_call(event, 400, message)
+                callback.assert_any_call(valid_event, 400, message)
+                event_callback.assert_called_once_with(event, 400, message)
+                self.assertEqual(event.retry, 0)
+
+    def test_worker_flush_serialization_failure_keeps_future_error(self):
+        callback = MagicMock()
+        self.workers.configuration.callback = callback
+        event = BaseEvent("invalid", "test_user", event_properties={})
+        event.event_properties["date"] = datetime(2024, 1, 1)
+        # Avoid starting the periodic consumer so flush owns this batch.
+        self.workers.is_started = True
+        self.workers.storage.push(event)
+        with patch.object(HttpClient, "post") as post:
+            with self.assertLogs("amplitude", "ERROR"):
+                with self.assertRaises(TypeError):
+                    self.workers.flush().result(timeout=5)
+            post.assert_not_called()
+        self.assertEqual(callback.call_count, 1)
+        self.assertEqual(callback.call_args[0][:2], (event, 400))
+        self.assertEqual(self.workers.storage.total_events, 0)
+        self.workers.threads_pool.shutdown()
 
     def test_worker_initialize_setup_success(self):
         self.assertTrue(self.workers.is_active)
