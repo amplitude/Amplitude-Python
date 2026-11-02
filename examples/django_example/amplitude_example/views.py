@@ -1,4 +1,6 @@
-from django.http import HttpResponse
+import math
+
+from django.http import HttpResponse, HttpResponseBadRequest
 from amplitude import Amplitude, BaseEvent, Identify, EventOptions, Revenue
 
 # Create your views here.
@@ -39,8 +41,19 @@ def set_user_group(request):
 
 def track_revenue(request):
     user_id = request.GET.get("user_id", "django_example_user")
-    price = float(request.GET.get("price", "0"))
-    quantity = int(request.GET.get("quantity", "1"))
+    price_input = request.GET.get("price", "0")
+    if "nan" in price_input.lower():
+        return HttpResponseBadRequest("Price must be a finite number.")
+    try:
+        price = float(price_input)
+    except ValueError:
+        return HttpResponseBadRequest("Price must be a finite number.")
+    if not math.isfinite(price):
+        return HttpResponseBadRequest("Price must be a finite number.")
+    try:
+        quantity = int(request.GET.get("quantity", "1"))
+    except ValueError:
+        return HttpResponseBadRequest("Quantity must be an integer.")
     revenue_obj = Revenue(price, quantity)
     amp_client.revenue(revenue_obj, EventOptions(user_id=user_id))
     return HttpResponse(f"<p>Track revenue for {user_id}</p>")
