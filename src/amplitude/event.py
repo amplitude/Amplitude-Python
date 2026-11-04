@@ -366,7 +366,7 @@ class EventOptions:
         event_body = {}
         for key, value in EVENT_KEY_MAPPING.items():
             if key in self and self[key] is not None:
-                event_body[value[0]] = self[key]
+                event_body[value[0]] = copy.deepcopy(self[key]) if isinstance(self[key], dict) else self[key]
         if "plan" in event_body:
             event_body["plan"] = event_body["plan"].get_plan_body()
         if "ingestion_metadata" in event_body:
