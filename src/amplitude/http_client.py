@@ -1,5 +1,6 @@
 import json
 from enum import Enum
+from http.client import HTTPException
 from socket import timeout
 from typing import Optional
 from urllib import request, response, error
@@ -144,4 +145,13 @@ class HttpClient:
                 result.body = {'error': e.reason}
         except error.URLError as e:
             result.body = {'error': str(e.reason)}
+        except (OSError, HTTPException, ValueError, KeyError) as e:
+            # urlopen() only wraps errors raised while sending the request in
+            # URLError. Reading the response can still fail: the connection was
+            # closed or reset (RemoteDisconnected, ConnectionResetError), the
+            # body was cut short (IncompleteRead) or is not the expected JSON.
+            # Report these as UNKNOWN, which is retried, instead of raising
+            # into the worker thread, where the events were silently dropped.
+            result = Response()
+            result.body = {'error': str(e) or type(e).__name__}
         return result
