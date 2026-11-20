@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, render_template, request
 from amplitude import Amplitude, BaseEvent, Identify, EventOptions, Revenue
 
 app = Flask(__name__)
@@ -16,25 +16,27 @@ def set_age(user_id):
     identify_obj = Identify()
     identify_obj.set("age", 99)
     amp_client.identify(identify_obj, EventOptions(user_id=user_id))
-    return f"<p>Set age to 99 for {user_id}.</p>"
+    return render_template("message.html", message=f"Set age to 99 for {user_id}.")
 
 
 @app.route("/groupidentify")
 def set_group_member():
+    group_name = request.args.get("group_name", "default")
     identify_obj = Identify()
     identify_obj.set("member", 16)
     amp_client.group_identify(group_type=request.args.get("group_type", "default"),
-                              group_name=request.args.get("group_name", "default"),
+                              group_name=group_name,
                               identify_obj=identify_obj)
-    return f"<p>Set group {request.args.get('group_name', 'default')} member to 16</p>"
+    return render_template("message.html", message=f"Set group {group_name} member to 16")
 
 
 @app.route("/setgroup/<user_id>")
 def set_user_group(user_id):
+    group_name = request.args.get("group_name", "default")
     amp_client.set_group(group_type=request.args.get("group_type", "default"),
-                         group_name=request.args.get("group_name", "default"),
+                         group_name=group_name,
                          event_options=EventOptions(user_id=user_id))
-    return f"<p>Put {user_id} to group {request.args.get('group_name', 'default')}</p>"
+    return render_template("message.html", message=f"Put {user_id} to group {group_name}")
 
 
 @app.route("/revenue/<user_id>")
@@ -42,7 +44,7 @@ def track_revenue(user_id):
     revenue_obj = Revenue(price=request.args.get("price", 0, float),
                           quantity=request.args.get("quantity", 1, int))
     amp_client.revenue(revenue_obj, EventOptions(user_id=user_id))
-    return f"<p>Track revenue for {user_id}</p>"
+    return render_template("message.html", message=f"Track revenue for {user_id}")
 
 
 @app.route("/flush")

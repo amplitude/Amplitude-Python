@@ -29,7 +29,7 @@ class Config:
         server_zone (str, optional): The server zone of project. Default to 'US'. Support 'EU'.
         use_batch(bool, optional): True to use batch API endpoint, False to use HTTP V2 API endpoint. Default to False.
         server_url (str, optional): API endpoint url. Default to None. Auto selected by configured server_zone
-            and use_batch if set to None. Support customized url by setting string value.
+            and use_batch if set to None. Use a trusted absolute HTTP or HTTPS URL for a custom endpoint.
         storage_provider (amplitude.storage.StorageProvider, optional): Default to InMemoryStorageProvider.
             Provide storage instance for events buffer.
         plan (amplitude.event.Plan, optional): Tracking plan information. Default to None.

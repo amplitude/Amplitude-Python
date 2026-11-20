@@ -16,7 +16,7 @@ class ResponseProcessor:
         if res.status == HttpStatus.SUCCESS:
             self.callback(events, res.code, "Event sent successfully.")
             self.log(events, res.code, "Event sent successfully.")
-        elif res.status in (HttpStatus.TIMEOUT, HttpStatus.FAILED, HttpStatus.UNKNOWN):
+        elif res.retryable and res.status in (HttpStatus.TIMEOUT, HttpStatus.FAILED, HttpStatus.UNKNOWN):
             self.push_to_storage(events, 0, res)
         elif res.status == HttpStatus.PAYLOAD_TOO_LARGE:
             if len(events) == 1:
