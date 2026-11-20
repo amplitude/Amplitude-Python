@@ -125,10 +125,14 @@ class HttpClient:
     def post(url: str, payload: bytes, header=None) -> Response:
         result = Response()
         try:
-            if not header:
-                req = request.Request(url, data=payload, headers=JSON_HEADER)
-            else:
-                req = request.Request(url, data=payload, headers=header)
+            req = request.Request(url, data=payload, headers=header or JSON_HEADER)
+        except ValueError:
+            req = None
+        if req is None or req.type not in ("http", "https") or not req.host:
+            result.body = {"error": "Server URL must be an absolute HTTP or HTTPS URL"}
+            return result
+
+        try:
             res = request.urlopen(req, timeout=constants.CONNECTION_TIMEOUT)
             result.parse(res)
         except timeout:
