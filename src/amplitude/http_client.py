@@ -24,9 +24,16 @@ class HttpStatus(Enum):
 
 class Response:
 
-    def __init__(self, status: HttpStatus = HttpStatus.UNKNOWN, body: Optional[dict] = None):
+    def __init__(
+        self,
+        status: HttpStatus = HttpStatus.UNKNOWN,
+        body: Optional[dict] = None,
+        *,
+        retryable: bool = True,
+    ):
         self.status: HttpStatus = status
         self.code: int = status.value
+        self.retryable = retryable
         self.body = body
         if not self.body:
             self.body = {}
@@ -123,15 +130,17 @@ class HttpClient:
 
     @staticmethod
     def post(url: str, payload: bytes, header=None) -> Response:
-        result = Response()
         try:
             req = request.Request(url, data=payload, headers=header or JSON_HEADER)
         except ValueError:
             req = None
         if req is None or req.type not in ("http", "https") or not req.host:
-            result.body = {"error": "Server URL must be an absolute HTTP or HTTPS URL"}
-            return result
+            return Response(
+                body={"error": "Server URL must be an absolute HTTP or HTTPS URL"},
+                retryable=False,
+            )
 
+        result = Response()
         try:
             res = request.urlopen(req, timeout=constants.CONNECTION_TIMEOUT)
             result.parse(res)

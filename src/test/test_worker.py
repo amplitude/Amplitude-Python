@@ -3,7 +3,7 @@ import unittest
 from collections import defaultdict
 import random
 from threading import Thread
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from amplitude import Config, BaseEvent
 from amplitude.storage import InMemoryStorage
@@ -194,6 +194,25 @@ class AmplitudeWorkersTestCase(unittest.TestCase):
         self.workers.flush().result()
         self.assertEqual(100, len(self.events_dict[200]))
         self.assertEqual(3, HttpClient.post.call_count)
+
+    # Other tests replace HttpClient.post directly, so use the original here.
+    @patch.object(HttpClient, "post", new=staticmethod(HttpClient.post))
+    @patch("amplitude.http_client.request.urlopen")
+    def test_worker_send_events_with_invalid_server_url_fails_without_retry(self, urlopen):
+        self.workers.configuration.server_url = "relative/path"
+        self.workers.configuration.callback = MagicMock()
+        event_callback = MagicMock()
+        event = BaseEvent("test_event", "test_user", callback=event_callback)
+
+        with patch.object(self.workers, "start"):
+            self.workers.send([event])
+
+        message = "Server URL must be an absolute HTTP or HTTPS URL"
+        self.workers.configuration.callback.assert_called_once_with(event, -1, message)
+        event_callback.assert_called_once_with(event, -1, message)
+        self.assertEqual(0, event.retry)
+        self.assertEqual(0, self.workers.storage.total_events)
+        urlopen.assert_not_called()
 
     def test_worker_send_events_with_unknown_error_retry_all_events(self):
         events = self.get_events_list(100)
